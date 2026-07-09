@@ -15,7 +15,7 @@ The Oil Intelligence Platform transforms complex energy market information into 
 | [003 — Repository Architecture](docs/003_Repository_Architecture.md) | Repository architecture and asset management |
 | [004 — Data Layer](docs/004_Data_Layer.md) | Data layer architecture and pipeline |
 | [005 — Engine Architecture](docs/005_Engine_Architecture.md) | Engine architecture and computational core |
-| 006 — Scoring System | *(pending)* |
+| [006 — Scoring System](docs/006_Scoring_System.md) | Scoring system and evaluation framework |
 | 007 — Risk System | *(pending)* |
 | 008 — Confidence System | *(pending)* |
 | 009 — Strategy System | *(pending)* |
