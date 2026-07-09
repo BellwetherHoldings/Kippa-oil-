@@ -29,6 +29,7 @@ The Oil Intelligence Platform transforms complex energy market information into 
 | [017 — Forecasting System](docs/017_Forecasting_System.md) | Forecasting engine and price prediction |
 | [018 — Future Ideas](docs/018_Future_Ideas.md) | Long-term roadmap and strategic expansion |
 | [019 — Geopolitical Intelligence](docs/019_Geopolitical_Intelligence.md) | Geopolitical intelligence and event scoring |
+| [020 — Supply Chain Intelligence](docs/020_Supply_Chain_Intelligence.md) | Supply chain monitoring and logistics intelligence |
 
 ## Core Principles
 
