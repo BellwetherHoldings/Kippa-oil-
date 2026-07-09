@@ -30,6 +30,7 @@ The Oil Intelligence Platform transforms complex energy market information into 
 | [018 — Future Ideas](docs/018_Future_Ideas.md) | Long-term roadmap and strategic expansion |
 | [019 — Geopolitical Intelligence](docs/019_Geopolitical_Intelligence.md) | Geopolitical intelligence and event scoring |
 | [020 — Supply Chain Intelligence](docs/020_Supply_Chain_Intelligence.md) | Supply chain monitoring and logistics intelligence |
+| [021 — Market Sentiment Intelligence](docs/021_Market_Sentiment_Intelligence.md) | Market sentiment and behavioral intelligence |
 
 ## Core Principles
 
