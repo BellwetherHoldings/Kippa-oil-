@@ -15,7 +15,12 @@ Usage:
 Outputs:
     data/crude_inventories.csv  (period, value, weekly_change)
     data/wti_prices.csv         (date, close)
+
+Governed by docs/004_Data_Layer.md. The API key is loaded from .env
+(gitignored) and is never logged, printed, or included in error messages.
 """
+
+from __future__ import annotations
 
 import os
 from pathlib import Path
@@ -23,51 +28,134 @@ from pathlib import Path
 import pandas as pd
 import requests
 from dotenv import load_dotenv
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
 
-load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = REPO_ROOT / "data"
 
-EIA_API_KEY = os.getenv("EIA_API_KEY")
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
-DATA_DIR.mkdir(parents=True, exist_ok=True)
+load_dotenv(REPO_ROOT / ".env")
 
-MAX_ROWS_PER_CALL = 5000
+EIA_INVENTORY_URL = "https://api.eia.gov/v2/petroleum/stoc/wstk/data/"
+EIA_SPOT_PRICE_URL = "https://api.eia.gov/v2/petroleum/pri/spt/data/"
+
+INVENTORY_SERIES = "WCESTUS1"  # U.S. commercial crude stocks, excl. SPR (kbbl)
+WTI_SPOT_SERIES = "RWTC"       # Cushing, OK WTI spot price FOB ($/bbl)
+
+MAX_ROWS_PER_CALL = 5000       # EIA v2 API page size cap
+REQUEST_TIMEOUT = 30           # seconds
+MAX_PAGES = 200                # hard stop against runaway pagination
+
+_RETRY = Retry(
+    total=4,
+    backoff_factor=2,          # 2s, 4s, 8s, 16s
+    status_forcelist=(429, 500, 502, 503, 504),
+    allowed_methods=("GET",),
+)
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def _paginate_eia(url: str, params: dict) -> list[dict]:
-    if not EIA_API_KEY:
+def _api_key() -> str:
+    key = os.getenv("EIA_API_KEY")
+    if not key:
         raise RuntimeError(
             "EIA_API_KEY not found. Add it to your .env file in the repo root."
         )
+    return key
 
+
+def _session() -> requests.Session:
+    session = requests.Session()
+    session.mount("https://", HTTPAdapter(max_retries=_RETRY))
+    return session
+
+
+# ---------------------------------------------------------------------------
+# Pagination
+# ---------------------------------------------------------------------------
+
+def _paginate_eia(url: str, params: dict) -> list[dict]:
+    """Fetch every page of an EIA v2 endpoint, returning the combined rows.
+
+    Errors are re-raised with the request URL stripped so the API key
+    (a query parameter) never appears in tracebacks or logs.
+    """
+    key = _api_key()
     all_rows: list[dict] = []
     offset = 0
 
-    while True:
-        page_params = {**params, "api_key": EIA_API_KEY, "offset": offset, "length": MAX_ROWS_PER_CALL}
-        resp = requests.get(url, params=page_params, timeout=30)
-        resp.raise_for_status()
-        payload = resp.json()
+    with _session() as session:
+        for _ in range(MAX_PAGES):
+            page_params = {
+                **params,
+                "api_key": key,
+                "offset": offset,
+                "length": MAX_ROWS_PER_CALL,
+            }
+            try:
+                resp = session.get(url, params=page_params, timeout=REQUEST_TIMEOUT)
+                resp.raise_for_status()
+            except requests.RequestException as exc:
+                status = getattr(exc.response, "status_code", "n/a")
+                raise RuntimeError(
+                    f"EIA API request failed (endpoint: {url}, "
+                    f"status: {status}, offset: {offset})."
+                ) from None  # drop original exception: its URL contains the key
 
-        rows = payload.get("response", {}).get("data", [])
-        if not rows:
-            break
+            payload = resp.json()
+            response = payload.get("response")
+            if not isinstance(response, dict):
+                raise RuntimeError(
+                    f"Unexpected EIA API payload shape at offset {offset}: "
+                    f"missing 'response' object."
+                )
 
-        all_rows.extend(rows)
-        offset += len(rows)
+            rows = response.get("data", [])
+            if not rows:
+                break
 
-        total = int(payload["response"].get("total", 0))
-        if offset >= total:
-            break
+            all_rows.extend(rows)
+            offset += len(rows)
+
+            total = int(response.get("total", 0))
+            if offset >= total:
+                break
+        else:
+            raise RuntimeError(
+                f"Pagination exceeded {MAX_PAGES} pages — aborting as a "
+                f"safeguard. Check the query parameters."
+            )
 
     return all_rows
+
+
+def _to_frame(
+    rows: list[dict],
+    date_col: str,
+    value_col: str,
+    label: str,
+) -> pd.DataFrame:
+    """Convert raw EIA rows to a clean two-column frame, sorted and deduped."""
+    if not rows:
+        raise RuntimeError(f"No {label} data returned from EIA.")
+
+    df = pd.DataFrame(rows)[["period", "value"]]
+    df.columns = [date_col, value_col]
+    df[date_col] = pd.to_datetime(df[date_col])
+    df[value_col] = pd.to_numeric(df[value_col], errors="coerce")
+
+    df = (
+        df.dropna(subset=[value_col])
+        .drop_duplicates(subset=[date_col], keep="last")
+        .sort_values(date_col)
+        .reset_index(drop=True)
+    )
+    if df.empty:
+        raise RuntimeError(f"All {label} rows were empty or non-numeric.")
+    return df
 
 
 # ---------------------------------------------------------------------------
@@ -78,26 +166,21 @@ def get_crude_inventories(start: str = "2010-01-01") -> pd.DataFrame:
     """
     Fetch weekly U.S. commercial crude inventories (ex-SPR) from EIA v2 API.
     Series WCESTUS1 — thousand barrels.
+
+    Returns columns: period, value, weekly_change.
     """
     rows = _paginate_eia(
-        "https://api.eia.gov/v2/petroleum/stoc/wstk/data/",
+        EIA_INVENTORY_URL,
         {
             "frequency": "weekly",
             "data[0]": "value",
-            "facets[series][]": "WCESTUS1",
+            "facets[series][]": INVENTORY_SERIES,
             "start": start,
             "sort[0][column]": "period",
             "sort[0][direction]": "asc",
         },
     )
-
-    if not rows:
-        raise RuntimeError("No inventory data returned from EIA.")
-
-    df = pd.DataFrame(rows)[["period", "value"]]
-    df["period"] = pd.to_datetime(df["period"])
-    df["value"] = pd.to_numeric(df["value"])
-    df = df.sort_values("period").reset_index(drop=True)
+    df = _to_frame(rows, "period", "value", "inventory")
     df["weekly_change"] = df["value"].diff()
     return df
 
@@ -110,28 +193,21 @@ def get_wti_prices(start: str = "2010-01-01") -> pd.DataFrame:
     """
     Fetch WTI Cushing spot price FOB (daily) from EIA v2 API.
     Series RWTC — dollars per barrel.
+
+    Returns columns: date, close.
     """
     rows = _paginate_eia(
-        "https://api.eia.gov/v2/petroleum/pri/spt/data/",
+        EIA_SPOT_PRICE_URL,
         {
             "frequency": "daily",
             "data[0]": "value",
-            "facets[series][]": "RWTC",
+            "facets[series][]": WTI_SPOT_SERIES,
             "start": start,
             "sort[0][column]": "period",
             "sort[0][direction]": "asc",
         },
     )
-
-    if not rows:
-        raise RuntimeError("No WTI price data returned from EIA.")
-
-    df = pd.DataFrame(rows)[["period", "value"]]
-    df.columns = ["date", "close"]
-    df["date"] = pd.to_datetime(df["date"])
-    df["close"] = pd.to_numeric(df["close"])
-    df = df.sort_values("date").reset_index(drop=True)
-    return df
+    return _to_frame(rows, "date", "close", "WTI price")
 
 
 # ---------------------------------------------------------------------------
@@ -139,6 +215,8 @@ def get_wti_prices(start: str = "2010-01-01") -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 
 def main() -> None:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
     print("Pulling EIA weekly crude inventories (ex-SPR)...")
     inv = get_crude_inventories()
     inv_path = DATA_DIR / "crude_inventories.csv"

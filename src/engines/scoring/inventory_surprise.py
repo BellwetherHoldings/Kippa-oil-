@@ -21,7 +21,12 @@ Usage:
 Outputs:
     data/inventory_surprise.csv
     Prints top 10 bullish and top 10 bearish surprises for sanity checking.
+
+Governed by docs/006_Scoring_System.md — every score is traceable to its
+inputs: expected_change and surprise are preserved alongside the z-score.
 """
+
+from __future__ import annotations
 
 from pathlib import Path
 
@@ -39,6 +44,9 @@ OUTPUT_PATH = DATA_DIR / "inventory_surprise.csv"
 
 LOOKBACK_YEARS = 5      # years used for the seasonal expectation
 ZSCORE_WINDOW = 52      # trailing weeks for z-score normalization
+ZSCORE_MIN_PERIODS = 26  # minimum observations before a z-score is emitted
+
+REQUIRED_COLUMNS = {"period", "weekly_change"}
 
 
 # ---------------------------------------------------------------------------
@@ -50,41 +58,49 @@ def compute_surprise(df: pd.DataFrame) -> pd.DataFrame:
     Add expected_change, surprise, and surprise_z columns.
 
     Expected change for a given week = mean of weekly_change for the same
-    ISO calendar week across the prior LOOKBACK_YEARS years.
+    ISO calendar week across the prior LOOKBACK_YEARS years. Duplicate
+    (year, week) entries (ISO week 53 quirks) are averaged before use.
     """
+    missing = REQUIRED_COLUMNS - set(df.columns)
+    if missing:
+        raise ValueError(f"Input is missing required columns: {sorted(missing)}")
+
     df = df.copy()
     df["period"] = pd.to_datetime(df["period"])
     df = df.sort_values("period").reset_index(drop=True)
 
     iso = df["period"].dt.isocalendar()
-    df["iso_week"] = iso.week.astype(int)
-    df["iso_year"] = iso.year.astype(int)
+    iso_week = iso.week.astype(int)
+    iso_year = iso.year.astype(int)
 
-    # Build a lookup of weekly_change by (iso_year, iso_week)
-    lookup = df.set_index(["iso_year", "iso_week"])["weekly_change"]
+    # Mean weekly_change per (iso_year, iso_week); dict lookup keeps the
+    # seasonal-expectation pass O(n) instead of an O(n^2) index scan.
+    seasonal: dict[tuple[int, int], float] = (
+        df["weekly_change"]
+        .groupby([iso_year, iso_week])
+        .mean()
+        .to_dict()
+    )
 
-    expected = []
-    for _, row in df.iterrows():
-        vals = []
-        for back in range(1, LOOKBACK_YEARS + 1):
-            key = (row["iso_year"] - back, row["iso_week"])
-            if key in lookup.index:
-                v = lookup.loc[key]
-                # Handle rare duplicate index entries (ISO week 53 quirks)
-                if isinstance(v, pd.Series):
-                    v = v.mean()
-                if pd.notna(v):
-                    vals.append(v)
-        expected.append(sum(vals) / len(vals) if vals else None)
+    def expected_for(year: int, week: int) -> float | None:
+        vals = [
+            v
+            for back in range(1, LOOKBACK_YEARS + 1)
+            if (v := seasonal.get((year - back, week))) is not None
+            and pd.notna(v)
+        ]
+        return sum(vals) / len(vals) if vals else None
 
-    df["expected_change"] = expected
+    df["expected_change"] = [
+        expected_for(y, w) for y, w in zip(iso_year, iso_week)
+    ]
     df["surprise"] = df["weekly_change"] - df["expected_change"]
 
     # Trailing z-score: how extreme is this surprise vs. the past year?
-    roll = df["surprise"].rolling(ZSCORE_WINDOW, min_periods=26)
+    roll = df["surprise"].rolling(ZSCORE_WINDOW, min_periods=ZSCORE_MIN_PERIODS)
     df["surprise_z"] = (df["surprise"] - roll.mean()) / roll.std()
 
-    return df.drop(columns=["iso_week", "iso_year"])
+    return df
 
 
 # ---------------------------------------------------------------------------
