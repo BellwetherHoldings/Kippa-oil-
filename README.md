@@ -18,7 +18,7 @@ The Oil Intelligence Platform transforms complex energy market information into 
 | [006 — Scoring System](docs/006_Scoring_System.md) | Scoring system and evaluation framework |
 | [007 — Risk System](docs/007_Risk_System.md) | Risk system and uncertainty intelligence |
 | [008 — Confidence System](docs/008_Confidence_System.md) | Confidence system and reliability assessment |
-| 009 — Strategy System | *(pending)* |
+| [009 — Strategy System](docs/009_Strategy_System.md) | Strategy system and decision intelligence |
 | 010 — Backtesting | *(pending)* |
 | 011 — Simulation | *(pending)* |
 | 012 — Monitoring Expansion | *(pending)* |
