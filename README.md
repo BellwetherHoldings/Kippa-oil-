@@ -23,7 +23,7 @@ The Oil Intelligence Platform transforms complex energy market information into 
 | [011 — Simulation](docs/011_Simulation.md) | Simulation and scenario analysis |
 | [012 — Observability System](docs/012_Observability_System.md) | Observability, tracing, and diagnostics |
 | [013 — Automation](docs/013_Automation.md) | Automation and workflow orchestration |
-| 014 — Security | *(pending)* |
+| [014 — Security](docs/014_Security.md) | Security system and platform protection |
 | 015 — Deployment | *(pending)* |
 | 016 — CLI | *(pending)* |
 | 017 — Future Ideas | *(pending)* |
