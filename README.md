@@ -27,6 +27,7 @@ The Oil Intelligence Platform transforms complex energy market information into 
 | [015 — Deployment](docs/015_Deployment.md) | Deployment system and release management |
 | [016 — CLI](docs/016_CLI.md) | Command line interface and operational control |
 | [017 — Forecasting System](docs/017_Forecasting_System.md) | Forecasting engine and price prediction |
+| [018 — Future Ideas](docs/018_Future_Ideas.md) | Long-term roadmap and strategic expansion |
 
 ## Core Principles
 
