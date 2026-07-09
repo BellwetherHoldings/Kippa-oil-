@@ -13,7 +13,7 @@ The Oil Intelligence Platform transforms complex energy market information into 
 | [001 — Project Vision](docs/001_Project_Vision.md) | Master architecture and platform vision |
 | [002 — Monitoring](docs/002_Monitoring.md) | Monitoring system architecture |
 | [003 — Repository Architecture](docs/003_Repository_Architecture.md) | Repository architecture and asset management |
-| 004 — Data Layer | *(pending)* |
+| [004 — Data Layer](docs/004_Data_Layer.md) | Data layer architecture and pipeline |
 | 005 — Engine Architecture | *(pending)* |
 | 006 — Scoring System | *(pending)* |
 | 007 — Risk System | *(pending)* |
