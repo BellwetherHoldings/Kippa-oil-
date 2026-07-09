@@ -1,0 +1,60 @@
+# Environment and secrets
+.env
+.env.*
+*.env
+secrets/
+credentials/
+*.key
+*.pem
+*.secret
+
+# API keys and config with secrets
+config/local/
+config/*.local.*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+venv/
+.venv/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Data (large files)
+*.csv
+*.parquet
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+data/raw/
+data/processed/
+
+# Model artifacts
+*.pt
+*.pth
+*.onnx
+*.joblib
+models/
