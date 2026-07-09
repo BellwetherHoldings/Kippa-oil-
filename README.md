@@ -1,1 +1,40 @@
-# Kippa-oil-
+# Oil Intelligence Platform
+
+A comprehensive intelligence, analytics, forecasting, simulation, strategy, and decision-support platform for global oil markets.
+
+## Overview
+
+The Oil Intelligence Platform transforms complex energy market information into actionable intelligence through a unified ecosystem of data engineering, artificial intelligence, forecasting, simulation, risk management, automation, and strategic analysis.
+
+## Architecture Documents
+
+| Document | System |
+|----------|--------|
+| [001 — Project Vision](docs/001_Project_Vision.md) | Master architecture and platform vision |
+| 002 — Monitoring | *(pending)* |
+| 003 — Repository Architecture | *(pending)* |
+| 004 — Data Layer | *(pending)* |
+| 005 — Engine Architecture | *(pending)* |
+| 006 — Scoring System | *(pending)* |
+| 007 — Risk System | *(pending)* |
+| 008 — Confidence System | *(pending)* |
+| 009 — Strategy System | *(pending)* |
+| 010 — Backtesting | *(pending)* |
+| 011 — Simulation | *(pending)* |
+| 012 — Monitoring Expansion | *(pending)* |
+| 013 — Automation | *(pending)* |
+| 014 — Security | *(pending)* |
+| 015 — Deployment | *(pending)* |
+| 016 — CLI | *(pending)* |
+| 017 — Future Ideas | *(pending)* |
+
+## Core Principles
+
+- **Intelligence First** — Information quality, accuracy, and analytical depth above all
+- **Explainability** — Every output must be understandable and traceable
+- **Continuous Improvement** — The platform learns and improves over time
+- **Modular Architecture** — Independent but connected systems that remain expandable
+
+## License
+
+Proprietary
