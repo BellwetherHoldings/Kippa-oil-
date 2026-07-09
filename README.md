@@ -20,7 +20,7 @@ The Oil Intelligence Platform transforms complex energy market information into 
 | [008 — Confidence System](docs/008_Confidence_System.md) | Confidence system and reliability assessment |
 | [009 — Strategy System](docs/009_Strategy_System.md) | Strategy system and decision intelligence |
 | [010 — Backtesting](docs/010_Backtesting.md) | Backtesting and historical validation |
-| 011 — Simulation | *(pending)* |
+| [011 — Simulation](docs/011_Simulation.md) | Simulation and scenario analysis |
 | 012 — Monitoring Expansion | *(pending)* |
 | 013 — Automation | *(pending)* |
 | 014 — Security | *(pending)* |
