@@ -22,7 +22,7 @@ The Oil Intelligence Platform transforms complex energy market information into 
 | [010 — Backtesting](docs/010_Backtesting.md) | Backtesting and historical validation |
 | [011 — Simulation](docs/011_Simulation.md) | Simulation and scenario analysis |
 | [012 — Observability System](docs/012_Observability_System.md) | Observability, tracing, and diagnostics |
-| 013 — Automation | *(pending)* |
+| [013 — Automation](docs/013_Automation.md) | Automation and workflow orchestration |
 | 014 — Security | *(pending)* |
 | 015 — Deployment | *(pending)* |
 | 016 — CLI | *(pending)* |
