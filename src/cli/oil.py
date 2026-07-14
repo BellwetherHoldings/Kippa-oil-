@@ -13,6 +13,10 @@ Governed by docs/016_CLI.md. v1 commands:
     oil macro show       FRED macroeconomic conditions
     oil risk status      Platform risk assessment
     oil confidence show  Confidence grade of the latest composite
+    oil backtest run     Historical validation of the signals
+    oil forecast show    4-week WTI fundamentals forecast
+    oil sim run          Monte Carlo scenarios (Hormuz overlays)
+    oil strategy show    Positioning recommendation from the full stack
 
 Usage:
     python src/cli/oil.py <module> <command>
@@ -50,6 +54,12 @@ def _signal_run() -> None:
     _risk_status()
     print()
     _confidence_show()
+    print()
+    _forecast_show()
+    print()
+    _sim_run()
+    print()
+    _strategy_show()
 
 
 def _geo_status() -> None:
@@ -82,6 +92,26 @@ def _confidence_show() -> None:
     engine.main()
 
 
+def _backtest_run() -> None:
+    from src.engines.backtesting import engine
+    engine.main()
+
+
+def _forecast_show() -> None:
+    from src.engines.forecast import engine
+    engine.main()
+
+
+def _sim_run() -> None:
+    from src.engines.simulation import engine
+    engine.main()
+
+
+def _strategy_show() -> None:
+    from src.engines.strategy import engine
+    engine.main()
+
+
 COMMANDS = {
     ("data", "pull"): _data_pull,
     ("signal", "run"): _signal_run,
@@ -92,6 +122,10 @@ COMMANDS = {
     ("macro", "show"): _macro_show,
     ("risk", "status"): _risk_status,
     ("confidence", "show"): _confidence_show,
+    ("backtest", "run"): _backtest_run,
+    ("forecast", "show"): _forecast_show,
+    ("sim", "run"): _sim_run,
+    ("strategy", "show"): _strategy_show,
 }
 
 

@@ -7,3 +7,4 @@ python-dotenv>=1.0
 
 # Development / testing
 pytest>=8.0
+scipy>=1.10

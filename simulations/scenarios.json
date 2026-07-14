@@ -1,0 +1,37 @@
+{
+  "_schema": "Scenario overlays for the simulation engine (docs/011_Simulation.md). drift_shift is added to the bootstrapped daily return; vol_mult scales it around its mean; first_n_days limits the drift overlay to the opening stretch (0 = whole horizon). Rationale must cite the situation that motivates the scenario.",
+  "scenarios": [
+    {
+      "id": "baseline",
+      "label": "Baseline — current dynamics persist",
+      "drift_shift_daily": 0.0,
+      "vol_mult": 1.0,
+      "first_n_days": 0,
+      "rationale": "Pure block-bootstrap of the last decade of WTI daily returns; no overlay."
+    },
+    {
+      "id": "hormuz_escalation",
+      "label": "Hormuz closure hardens / conflict escalates",
+      "drift_shift_daily": 0.002,
+      "vol_mult": 1.5,
+      "first_n_days": 0,
+      "rationale": "Strait stays shut and strikes intensify; sustained supply-shock drift with crisis-level volatility (2026-07-13 re-closure, ~25% of seaborne trade)."
+    },
+    {
+      "id": "hormuz_resolution",
+      "label": "Qatar talks succeed — strait reopens",
+      "drift_shift_daily": -0.006,
+      "vol_mult": 1.3,
+      "first_n_days": 10,
+      "rationale": "Reopening repeats the early-July glut trade: sharp front-loaded selloff (analog: WTI slid toward $69 when Hormuz briefly reopened 2026-07-02), then normal dynamics."
+    },
+    {
+      "id": "spr_buffer_exhausted",
+      "label": "Closure persists with SPR near empty",
+      "drift_shift_daily": 0.001,
+      "vol_mult": 1.3,
+      "first_n_days": 0,
+      "rationale": "SPR at 1st percentile of 3y after -29.7M bbl in 4 weeks; a thinner buffer amplifies every subsequent disruption."
+    }
+  ]
+}
