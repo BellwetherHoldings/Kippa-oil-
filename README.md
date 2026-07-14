@@ -13,6 +13,29 @@ The Oil Intelligence Platform transforms complex energy market information into 
 - **CLI Pattern**: `oil <module> <command> [options]`
 - **API Pattern**: `/api/v1/<resource>`
 
+## Running the Platform
+
+```bash
+pip install -r requirements.txt
+# .env in the repo root needs: EIA_API_KEY, FRED_API_KEY, PLATFORM_API_KEYS
+
+python src/cli/oil.py signal run       # full pipeline: data → signals → strategy
+python src/cli/oil.py monitor status   # platform health
+python src/cli/oil.py deploy check     # release gate (audit + tests + env)
+python src/cli/oil.py api serve        # REST API on 127.0.0.1:8000
+```
+
+`python src/cli/oil.py --help` lists all 19 commands. The weekly refresh
+workflow (`oil auto run weekly_full_run`) is designed to be scheduled
+after the Wednesday EIA release.
+
+**Intelligence stack (all engines live):** six freshness-weighted signal
+components — geopolitical events, inventory surprise, price momentum,
+supply chain stress, CFTC positioning, macro conditions — aggregated into
+an explainable composite, then graded by the risk, confidence, forecast,
+simulation, and strategy engines. Every output carries its evidence,
+timestamps, and warnings.
+
 ## Architecture Documents
 
 ### Foundation
