@@ -5,8 +5,13 @@ Governed by docs/016_CLI.md. v1 commands:
 
     oil data pull        Refresh EIA inventories + WTI prices
     oil signal run       Full pipeline: pull data → all engines → composite
+                         → risk → confidence
     oil signal show      Composite from existing data (no re-pull)
     oil geo status       Geopolitical risk assessment
+    oil supply status    Supply chain stress assessment
+    oil sentiment show   CFTC institutional positioning
+    oil risk status      Platform risk assessment
+    oil confidence show  Confidence grade of the latest composite
 
 Usage:
     python src/cli/oil.py <module> <command>
@@ -40,10 +45,34 @@ def _signal_run() -> None:
     _data_pull()
     print()
     _signal_show()
+    print()
+    _risk_status()
+    print()
+    _confidence_show()
 
 
 def _geo_status() -> None:
     from src.intelligence.geopolitical import engine
+    engine.main()
+
+
+def _supply_status() -> None:
+    from src.intelligence.supply_chain import engine
+    engine.main()
+
+
+def _sentiment_show() -> None:
+    from src.intelligence.market_sentiment import engine
+    engine.main()
+
+
+def _risk_status() -> None:
+    from src.engines.risk import engine
+    engine.main()
+
+
+def _confidence_show() -> None:
+    from src.engines.confidence import engine
     engine.main()
 
 
@@ -52,6 +81,10 @@ COMMANDS = {
     ("signal", "run"): _signal_run,
     ("signal", "show"): _signal_show,
     ("geo", "status"): _geo_status,
+    ("supply", "status"): _supply_status,
+    ("sentiment", "show"): _sentiment_show,
+    ("risk", "status"): _risk_status,
+    ("confidence", "show"): _confidence_show,
 }
 
 

@@ -46,9 +46,11 @@ SURPRISE_PATH = DATA_DIR / "inventory_surprise.csv"
 # most weight while a chokepoint is disrupted; these are v1 priors to be
 # re-estimated by the Wave 3 backtester.
 WEIGHTS = {
-    "geopolitical_risk": 0.40,
-    "inventory_surprise": 0.30,
-    "price_momentum": 0.30,
+    "geopolitical_risk": 0.30,
+    "inventory_surprise": 0.20,
+    "price_momentum": 0.20,
+    "supply_chain_stress": 0.15,
+    "market_sentiment": 0.15,
 }
 
 # Freshness model (doc 008 lite): each component has an expected update
@@ -57,6 +59,8 @@ EXPECTED_LAG_DAYS = {
     "geopolitical_risk": 2,
     "inventory_surprise": 12,   # weekly series + EIA publication lag
     "price_momentum": 4,
+    "supply_chain_stress": 12,  # weekly EIA series
+    "market_sentiment": 12,     # COT published Friday for prior Tuesday
 }
 CONFIDENCE_FLOOR = 0.2
 DECAY_DAYS = 21                 # days past expected lag to reach the floor
@@ -165,6 +169,51 @@ class CompositeSignalEngine(Engine):
             warnings.extend(geo.warnings)
         else:
             warnings.append(f"geopolitical_risk failed and was excluded: {geo.error}")
+
+        # -- supply chain stress ----------------------------------------------
+        from src.intelligence.supply_chain.engine import (
+            SupplyChainIntelligenceEngine,
+        )
+        supply = SupplyChainIntelligenceEngine().run()
+        if supply.ok:
+            d = supply.data
+            supply_signal = _clip(d["stress_score"] / 100.0, 0.0, 1.0)
+            components.append({
+                "component": "supply_chain_stress",
+                "signal": round(supply_signal, 3),
+                "as_of": d["as_of"],
+                "staleness_days": d["staleness_days"],
+                "confidence": _freshness_confidence(
+                    "supply_chain_stress", d["staleness_days"]),
+                "detail": f"stress {d['stress_score']}/100 ({d['stress_level']}), "
+                          f"{d['metrics_scored']} metrics",
+            })
+            evidence.extend(supply.evidence)
+            warnings.extend(supply.warnings)
+        else:
+            warnings.append(
+                f"supply_chain_stress failed and was excluded: {supply.error}")
+
+        # -- market sentiment (CFTC positioning) --------------------------------
+        from src.intelligence.market_sentiment.engine import MarketSentimentEngine
+        senti = MarketSentimentEngine().run()
+        if senti.ok:
+            d = senti.data
+            components.append({
+                "component": "market_sentiment",
+                "signal": d["sentiment_signal"],
+                "as_of": d["as_of"],
+                "staleness_days": d["staleness_days"],
+                "confidence": _freshness_confidence(
+                    "market_sentiment", d["staleness_days"]),
+                "detail": f"net spec {d['net_noncommercial_contracts']:+,} "
+                          f"contracts, 3y z {d['positioning_zscore_3y']:+.2f}",
+            })
+            evidence.extend(senti.evidence)
+            warnings.extend(senti.warnings)
+        else:
+            warnings.append(
+                f"market_sentiment failed and was excluded: {senti.error}")
 
         if len(components) < 2:
             raise ValueError(

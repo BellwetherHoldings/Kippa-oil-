@@ -159,6 +159,33 @@ def _to_frame(
 
 
 # ---------------------------------------------------------------------------
+# EIA: generic series fetch (v1-style series IDs via the v2 passthrough)
+# ---------------------------------------------------------------------------
+
+def get_series(series_id: str, start: str = "2010-01-01") -> pd.DataFrame:
+    """
+    Fetch any EIA series by its v1-style ID (e.g. 'PET.WPULEUS3.W') via the
+    v2 /seriesid/ passthrough. Returns columns: period, value (sorted asc).
+    """
+    rows = _paginate_eia(
+        f"https://api.eia.gov/v2/seriesid/{series_id}",
+        {"start": start},
+    )
+    if not rows:
+        raise RuntimeError(f"No data returned for EIA series {series_id}.")
+
+    df = pd.DataFrame(rows)[["period", "value"]]
+    df["period"] = pd.to_datetime(df["period"])
+    df["value"] = pd.to_numeric(df["value"], errors="coerce")
+    return (
+        df.dropna(subset=["value"])
+        .drop_duplicates(subset=["period"], keep="last")
+        .sort_values("period")
+        .reset_index(drop=True)
+    )
+
+
+# ---------------------------------------------------------------------------
 # EIA: weekly crude inventories
 # ---------------------------------------------------------------------------
 
