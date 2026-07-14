@@ -1,0 +1,33 @@
+{
+  "_schema": "Workflow definitions for the automation engine (docs/013_Automation.md). Steps run sequentially; each step is retried up to max_retries on failure; on_failure 'continue' records the failure and proceeds, 'abort' stops the workflow.",
+  "workflows": {
+    "weekly_full_run": {
+      "description": "Full refresh after the Wednesday EIA release: pull data, recompute every signal, revalidate, and re-issue the strategy view.",
+      "max_retries": 2,
+      "on_failure": "continue",
+      "steps": [
+        "data_pull",
+        "inventory_surprise",
+        "composite_signal",
+        "risk_assessment",
+        "signal_confidence",
+        "backtest",
+        "forecast",
+        "simulation",
+        "strategy",
+        "monitoring"
+      ]
+    },
+    "quick_signal": {
+      "description": "Fast intraday re-read without re-pulling EIA data: composite, risk, confidence, monitoring.",
+      "max_retries": 1,
+      "on_failure": "continue",
+      "steps": [
+        "composite_signal",
+        "risk_assessment",
+        "signal_confidence",
+        "monitoring"
+      ]
+    }
+  }
+}
