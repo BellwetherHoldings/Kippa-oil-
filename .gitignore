@@ -59,3 +59,6 @@ data/processed/
 *.onnx
 *.joblib
 models/
+
+# Engine outputs (regenerated each run)
+data/*.json
