@@ -10,6 +10,7 @@ Governed by docs/016_CLI.md. v1 commands:
     oil geo status       Geopolitical risk assessment
     oil supply status    Supply chain stress assessment
     oil sentiment show   CFTC institutional positioning
+    oil macro show       FRED macroeconomic conditions
     oil risk status      Platform risk assessment
     oil confidence show  Confidence grade of the latest composite
 
@@ -66,6 +67,11 @@ def _sentiment_show() -> None:
     engine.main()
 
 
+def _macro_show() -> None:
+    from src.intelligence.macroeconomic import engine
+    engine.main()
+
+
 def _risk_status() -> None:
     from src.engines.risk import engine
     engine.main()
@@ -83,6 +89,7 @@ COMMANDS = {
     ("geo", "status"): _geo_status,
     ("supply", "status"): _supply_status,
     ("sentiment", "show"): _sentiment_show,
+    ("macro", "show"): _macro_show,
     ("risk", "status"): _risk_status,
     ("confidence", "show"): _confidence_show,
 }

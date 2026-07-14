@@ -29,9 +29,9 @@ if str(_REPO_ROOT) not in sys.path:
 
 from src.engines.base import DATA_DIR, Engine
 
-# Doc 007 defines nine categories; v1 covers four with live data.
+# Doc 007 defines nine categories; v1 covers five with live data.
 UNCOVERED_CATEGORIES = [
-    "economic", "demand", "regulatory", "operational", "cybersecurity",
+    "demand", "regulatory", "operational", "cybersecurity",
 ]
 
 RISK_LEVELS = (
@@ -52,6 +52,9 @@ MITIGATIONS = {
               "stops; headline-driven whipsaws are the dominant tape risk.",
     "model_data": "Refresh stale feeds before acting on composite output; "
                   "the weekly EIA cadence cannot see intra-week shocks.",
+    "economic": "Watch dollar strength and industrial production momentum; "
+                "a macro headwind can cap price upside even in a supply "
+                "shock.",
 }
 
 
@@ -140,6 +143,24 @@ class RiskEngine(Engine):
                 "mitigation": MITIGATIONS["market"],
             })
             evidence.extend(momo.get("evidence", []))
+
+        # -- economic risk (macro headwind for demand) -------------------------
+        macro = _load("macro_conditions")
+        if macro and macro.get("status") == "success":
+            d = macro["data"]
+            # bearish macro (signal → -1) = high economic risk to prices
+            prob = round((1.0 - d["macro_signal"]) / 2.0, 2)
+            assessments.append({
+                "category": "economic",
+                "probability": prob,
+                "impact": 0.6,
+                "score": round(100 * prob * 0.6, 1),
+                "basis": f"Macro signal {d['macro_signal']:+.2f} "
+                         f"({d['macro_label']}), "
+                         f"{d['indicators_scored']} FRED indicators",
+                "mitigation": MITIGATIONS["economic"],
+            })
+            evidence.extend(macro.get("evidence", []))
 
         # -- model/data risk (staleness of our own inputs) --------------------------
         comp = _load("composite_signal")

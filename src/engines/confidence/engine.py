@@ -52,7 +52,7 @@ TIERS = (          # doc 008 classification table
 
 VOL_FLOOR = 0.15   # ≤15% annualized vol → full confidence
 VOL_CEIL = 0.60    # ≥60% → zero
-TARGET_COMPONENTS = 5   # geo, inventory, momentum, supply, sentiment
+TARGET_COMPONENTS = 6   # geo, inventory, momentum, supply, sentiment, macro
 
 
 def _tier(score: float) -> str:

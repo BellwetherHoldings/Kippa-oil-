@@ -46,11 +46,12 @@ SURPRISE_PATH = DATA_DIR / "inventory_surprise.csv"
 # most weight while a chokepoint is disrupted; these are v1 priors to be
 # re-estimated by the Wave 3 backtester.
 WEIGHTS = {
-    "geopolitical_risk": 0.30,
-    "inventory_surprise": 0.20,
-    "price_momentum": 0.20,
-    "supply_chain_stress": 0.15,
-    "market_sentiment": 0.15,
+    "geopolitical_risk": 0.28,
+    "inventory_surprise": 0.18,
+    "price_momentum": 0.18,
+    "supply_chain_stress": 0.14,
+    "market_sentiment": 0.12,
+    "macro_conditions": 0.10,
 }
 
 # Freshness model (doc 008 lite): each component has an expected update
@@ -61,6 +62,7 @@ EXPECTED_LAG_DAYS = {
     "price_momentum": 4,
     "supply_chain_stress": 12,  # weekly EIA series
     "market_sentiment": 12,     # COT published Friday for prior Tuesday
+    "macro_conditions": 6,      # daily FRED series with short lags
 }
 CONFIDENCE_FLOOR = 0.2
 DECAY_DAYS = 21                 # days past expected lag to reach the floor
@@ -214,6 +216,29 @@ class CompositeSignalEngine(Engine):
         else:
             warnings.append(
                 f"market_sentiment failed and was excluded: {senti.error}")
+
+        # -- macroeconomic conditions (FRED) --------------------------------
+        from src.intelligence.macroeconomic.engine import (
+            MacroeconomicIntelligenceEngine,
+        )
+        macro = MacroeconomicIntelligenceEngine().run()
+        if macro.ok:
+            d = macro.data
+            components.append({
+                "component": "macro_conditions",
+                "signal": d["macro_signal"],
+                "as_of": d["as_of"],
+                "staleness_days": d["staleness_days"],
+                "confidence": _freshness_confidence(
+                    "macro_conditions", d["staleness_days"]),
+                "detail": f"macro {d['macro_label']}, "
+                          f"{d['indicators_scored']} FRED indicators",
+            })
+            evidence.extend(macro.evidence)
+            warnings.extend(macro.warnings)
+        else:
+            warnings.append(
+                f"macro_conditions failed and was excluded: {macro.error}")
 
         if len(components) < 2:
             raise ValueError(
