@@ -96,11 +96,21 @@ def test_cli_status_counts_real_commands():
 
 def test_api_status_reads_route_table(monkeypatch):
     monkeypatch.setenv("PLATFORM_API_KEYS", "k1")
+    from src.api.app import RESOURCES
     from src.api.status import APIStatusEngine
     result = APIStatusEngine().run()
     assert result.ok
-    assert result.data["resources_served"] == 12
+    assert result.data["resources_served"] == len(RESOURCES)
     assert "/api/v1/health" in result.data["routes"]
+
+
+def test_every_registered_artifact_is_api_reachable():
+    from src.api.app import RESOURCES
+    served = set(RESOURCES.values())
+    for entry in REGISTRY:
+        assert entry["artifact"] in served, (
+            f"doc {entry['doc']} artifact '{entry['artifact']}' "
+            f"is not exposed by the API")
 
 
 def test_deployment_readiness_gates(monkeypatch):

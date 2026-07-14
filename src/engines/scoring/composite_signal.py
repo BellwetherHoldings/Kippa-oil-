@@ -59,6 +59,8 @@ _DEFAULT_WEIGHTS = {
 
 
 def _load_weights() -> tuple[dict[str, float], str]:
+    """Loaded per-run (not at import) so a bad config fails the engine's
+    validate stage instead of breaking every module that imports this one."""
     if WEIGHTS_CONFIG.exists():
         import json
         cfg = json.loads(WEIGHTS_CONFIG.read_text())
@@ -69,9 +71,6 @@ def _load_weights() -> tuple[dict[str, float], str]:
                 f"config/weights.json weights sum to {total}, not 1.0")
         return w, f"config/weights.json v{cfg['version']}"
     return _DEFAULT_WEIGHTS, "built-in defaults (no config/weights.json)"
-
-
-WEIGHTS, WEIGHTS_SOURCE = _load_weights()
 
 # Freshness model (doc 008 lite): each component has an expected update
 # cadence; confidence decays linearly to the floor once data outruns it.
@@ -122,11 +121,13 @@ class CompositeSignalEngine(Engine):
             raise ValueError(
                 f"{SURPRISE_PATH} not found. Run the inventory pipeline first."
             )
+        _load_weights()   # fail here, in the validate stage, on a bad config
 
     def execute(
         self, inputs: dict[str, Any], warnings: list[str]
     ) -> tuple[dict[str, Any], list[str]]:
         today = date.today()
+        weights, weights_source = _load_weights()
         components: list[dict[str, Any]] = []
         evidence: list[str] = []
 
@@ -267,17 +268,17 @@ class CompositeSignalEngine(Engine):
 
         # -- aggregate (doc 006: weighted, normalized, explainable) -----------
         total_w = sum(
-            WEIGHTS[c["component"]] * c["confidence"] for c in components
+            weights[c["component"]] * c["confidence"] for c in components
         )
         score = sum(
-            WEIGHTS[c["component"]] * c["confidence"] * c["signal"]
+            weights[c["component"]] * c["confidence"] * c["signal"]
             for c in components
         ) / total_w
 
         for c in components:
-            c["weight"] = WEIGHTS[c["component"]]
+            c["weight"] = weights[c["component"]]
             c["effective_weight"] = round(
-                WEIGHTS[c["component"]] * c["confidence"] / total_w, 3
+                weights[c["component"]] * c["confidence"] / total_w, 3
             )
 
         components.sort(key=lambda c: c["effective_weight"], reverse=True)
@@ -292,7 +293,7 @@ class CompositeSignalEngine(Engine):
                 "Σ(weight × freshness_confidence); signals normalized to "
                 "[-1,+1], positive = bullish"
             ),
-            "weights_source": WEIGHTS_SOURCE,
+            "weights_source": weights_source,
         }
         return data, evidence
 

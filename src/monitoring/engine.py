@@ -42,11 +42,23 @@ ARTIFACT_MAX_AGE = {
     "simulation_results": 8,
     "strategy_recommendation": 8,
     "data_quality_report": 8,
+    "backtest_report": 8,
+    "security_audit": 8,
+    "deployment_readiness": 8,
+    "invariant_compliance": 8,
+    "engine_registry": 8,
+    "repo_architecture_report": 8,
+    "observability_report": 8,
+    "automation_status": 8,
+    "cli_status": 8,
+    "api_status": 8,
+    "roadmap_status": 8,
 }
 
 CSV_MAX_AGE = {
     "crude_inventories.csv": 9,     # weekly EIA release cadence
     "wti_prices.csv": 5,
+    "wti_live.csv": 4,              # live feed should refresh every run
     "inventory_surprise.csv": 9,
 }
 

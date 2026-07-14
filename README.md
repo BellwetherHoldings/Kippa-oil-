@@ -25,7 +25,8 @@ python src/cli/oil.py deploy check     # release gate (audit + tests + env)
 python src/cli/oil.py api serve        # REST API on 127.0.0.1:8000
 ```
 
-`python src/cli/oil.py --help` lists all 19 commands. The weekly refresh
+`python src/cli/oil.py --help` lists all 22 commands (`oil system run
+full` executes every engine and renders the doc-by-doc board). The weekly refresh
 workflow (`oil auto run weekly_full_run`) is designed to be scheduled
 after the Wednesday EIA release.
 

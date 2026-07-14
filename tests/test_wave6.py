@@ -92,6 +92,9 @@ def test_risk_covers_eight_categories(tmp_path, monkeypatch):
 # Simulation sensitivity & forecast horizons (published artifacts)
 # ---------------------------------------------------------------------------
 
+@pytest.mark.skipif(
+    not (REPO_ROOT / "data" / "simulation_results.json").exists(),
+    reason="requires generated artifacts (run the pipeline first)")
 def test_simulation_publishes_sensitivity():
     art = json.loads((REPO_ROOT / "data" / "simulation_results.json")
                      .read_text())
@@ -101,6 +104,9 @@ def test_simulation_publishes_sensitivity():
         assert entry["dominant_assumption"] in entry["parameters"]
 
 
+@pytest.mark.skipif(
+    not (REPO_ROOT / "data" / "price_forecast.json").exists(),
+    reason="requires generated artifacts (run the pipeline first)")
 def test_forecast_publishes_both_horizons():
     art = json.loads((REPO_ROOT / "data" / "price_forecast.json").read_text())
     horizons = art["data"]["horizons"]

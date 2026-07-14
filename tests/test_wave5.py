@@ -12,7 +12,9 @@ sys.path.insert(0, str(REPO_ROOT))
 
 import src.data.quality as quality_mod
 from src.data.quality import DataQualityEngine
-from src.engines.scoring.composite_signal import WEIGHTS, WEIGHTS_SOURCE
+from src.engines.scoring.composite_signal import _load_weights
+
+WEIGHTS, WEIGHTS_SOURCE = _load_weights()
 
 
 # ---------------------------------------------------------------------------
@@ -83,6 +85,9 @@ def test_weights_config_carries_evidence_and_changelog():
 # Drift detection fields
 # ---------------------------------------------------------------------------
 
+@pytest.mark.skipif(
+    not (REPO_ROOT / "data" / "backtest_report.json").exists(),
+    reason="requires generated artifacts (run the pipeline first)")
 def test_backtest_reports_drift_and_weight_recommendation():
     art = json.loads((REPO_ROOT / "data" / "backtest_report.json").read_text())
     d = art["data"]

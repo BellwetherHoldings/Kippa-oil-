@@ -44,7 +44,6 @@ HORIZONS = {          # target column → calendar days
     "fwd_ret_4w": 28,
 }
 PRIMARY_TARGET = "fwd_ret_4w"
-HORIZON_DAYS = 28
 
 
 class ForecastEngine(Engine):
@@ -106,12 +105,6 @@ class ForecastEngine(Engine):
             }
 
         primary = horizons[PRIMARY_TARGET]
-        expected = primary["expected_return"]
-        point = primary["point_forecast"]
-        lo68, hi68 = primary["interval_68"]
-        lo95, hi95 = primary["interval_95"]
-        r2 = primary["r_squared"]
-        resid_sd = primary["residual_sd"]
 
         warnings.append(
             "Model estimated on 2011-2026 data WITHOUT a geopolitical "
@@ -125,21 +118,23 @@ class ForecastEngine(Engine):
                 f"(${last_close:.2f}); intervals shift with the live price."
             )
 
+        # top-level fields mirror the primary horizon so downstream
+        # consumers (strategy, API clients) keep a stable flat schema
         data = {
             "as_of": date.today().isoformat(),
-            "horizon_days": HORIZON_DAYS,
+            "horizon_days": primary["days"],
             "anchor_price": last_close,
             "anchor_date": m["last_date"],
-            "expected_return_4w": round(expected, 4),
-            "point_forecast": round(point, 2),
-            "interval_68": [round(lo68, 2), round(hi68, 2)],
-            "interval_95": [round(lo95, 2), round(hi95, 2)],
+            "expected_return_4w": primary["expected_return"],
+            "point_forecast": primary["point_forecast"],
+            "interval_68": primary["interval_68"],
+            "interval_95": primary["interval_95"],
             "horizons": horizons,
             "model": {
                 "type": "OLS, standardized features, per-horizon fits",
                 "n_weeks": n,
-                "r_squared": r2,
-                "residual_sd_4w": resid_sd,
+                "r_squared": primary["r_squared"],
+                "residual_sd_4w": primary["residual_sd"],
                 "intercept": primary["intercept"],
                 "coefficients": primary["coefficients"],
                 "current_features": {
@@ -148,8 +143,8 @@ class ForecastEngine(Engine):
             },
         }
         evidence = [
-            f"feature panel {n} weeks; R²={r2:.3f}; "
-            f"residual σ(4w)={resid_sd:.3f}",
+            f"feature panel {n} weeks; R²={primary['r_squared']:.3f}; "
+            f"residual σ(4w)={primary['residual_sd']:.3f}",
             "data/backtest_report.json validates the inventory feature "
             "(IC +0.13 at 1w)",
         ]

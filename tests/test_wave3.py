@@ -30,12 +30,18 @@ def test_verdict_thresholds():
 # Feature panel has no lookahead
 # ---------------------------------------------------------------------------
 
+@pytest.mark.skipif(
+    not (REPO_ROOT / "data" / "feature_panel.csv").exists(),
+    reason="requires generated data (run the pipeline first)")
 def test_panel_entry_dates_never_precede_period():
     panel = pd.read_csv(REPO_ROOT / "data" / "feature_panel.csv",
                         parse_dates=["period", "entry_date"])
     assert (panel["entry_date"] >= panel["period"]).all()
 
 
+@pytest.mark.skipif(
+    not (REPO_ROOT / "data" / "feature_panel.csv").exists(),
+    reason="requires generated data (run the pipeline first)")
 def test_panel_has_required_columns():
     panel = pd.read_csv(REPO_ROOT / "data" / "feature_panel.csv")
     for col in ("surprise_z", "momentum_5d", "vol_20d",

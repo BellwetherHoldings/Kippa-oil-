@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import re
 import subprocess
-import sys
 from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -87,28 +86,14 @@ def run_audit() -> dict:
                 })
     checks += scanned
 
-    report = {
+    # NOTE: publishing data/security_audit.json is SecurityEngine's job
+    # (src/security/engine.py) — one artifact, one schema, one publisher.
+    return {
         "status": "fail" if findings else "pass",
         "checks_run": checks,
         "tracked_files_scanned": scanned,
         "findings": findings,
     }
-
-    # publish for downstream consumers (risk engine's cybersecurity category)
-    import json
-    from datetime import datetime, timezone
-    data_dir = _REPO_ROOT / "data"
-    data_dir.mkdir(exist_ok=True)
-    (data_dir / "security_audit.json").write_text(json.dumps({
-        "engine": "security_audit",
-        "status": "success",
-        "finished_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "data": report,
-        "evidence": [f"git ls-files scan of {scanned} tracked files"],
-        "warnings": [],
-        "error": None,
-    }, indent=2))
-    return report
 
 
 def main() -> None:

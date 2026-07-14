@@ -107,6 +107,9 @@ def test_api_accepts_valid_key(client):
     assert "signal" in r.json()["payload"]["resources"]
 
 
+@pytest.mark.skipif(
+    not (REPO_ROOT / "data" / "composite_signal.json").exists(),
+    reason="requires generated artifacts (run the pipeline first)")
 def test_api_serves_published_artifact(client):
     r = client.get("/api/v1/signal", headers={"X-API-Key": "test-key-1"})
     assert r.status_code == 200

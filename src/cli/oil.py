@@ -146,8 +146,8 @@ def _auto_run(arg=None):
 
 
 def _security_audit(arg=None):
-    from src.security import audit
-    audit.main()
+    from src.security import engine
+    engine.main()          # runs the audit AND publishes the artifact
 
 
 def _deploy_check(arg=None):

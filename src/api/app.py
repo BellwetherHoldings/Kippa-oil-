@@ -41,7 +41,8 @@ RATE_LIMIT_PER_MIN = 60
 
 # RBAC (doc 022): keys are "value" (readonly) or "value:admin" in
 # PLATFORM_API_KEYS. Admin-only resources expose platform internals.
-ADMIN_RESOURCES = {"monitoring"}
+ADMIN_RESOURCES = {"monitoring", "observability", "automation",
+                   "security", "deployment"}
 API_AUDIT_LOG = _REPO_ROOT / "logs" / "api_audit.jsonl"
 
 # resource name → artifact file
@@ -58,6 +59,18 @@ RESOURCES = {
     "macro": "macro_conditions",
     "momentum": "price_momentum",
     "monitoring": "monitoring_report",
+    "quality": "data_quality_report",
+    "backtest": "backtest_report",
+    "invariants": "invariant_compliance",
+    "repo": "repo_architecture_report",
+    "registry": "engine_registry",
+    "observability": "observability_report",
+    "automation": "automation_status",
+    "security": "security_audit",
+    "deployment": "deployment_readiness",
+    "cli": "cli_status",
+    "apistatus": "api_status",
+    "roadmap": "roadmap_status",
 }
 
 app = FastAPI(

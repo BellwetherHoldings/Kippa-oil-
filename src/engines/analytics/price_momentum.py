@@ -20,8 +20,6 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-import pandas as pd
-
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
@@ -41,13 +39,10 @@ class PriceMomentumEngine(Engine):
     version = "1.0"
     output_name = "price_momentum"
 
-    def __init__(self, prices_path: Path = PRICES_PATH) -> None:
-        self.prices_path = prices_path
-
     def validate_input(self, inputs: dict[str, Any]) -> None:
-        if not self.prices_path.exists():
+        if not PRICES_PATH.exists():
             raise ValueError(
-                f"{self.prices_path} not found. Run src/data/eia_client.py first."
+                f"{PRICES_PATH} not found. Run src/data/eia_client.py first."
             )
 
     def execute(

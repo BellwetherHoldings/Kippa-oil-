@@ -196,6 +196,8 @@ def run_full_system(pull_data: bool = False) -> dict[str, Any]:
     if pull_data:
         from src.data import eia_client
         eia_client.main()
+        from src.data.live_prices import save_live_prices
+        save_live_prices()
         import pandas as pd
 
         from src.engines.scoring.inventory_surprise import (
@@ -207,6 +209,9 @@ def run_full_system(pull_data: bool = False) -> dict[str, Any]:
 
     by_doc = {e["doc"]: e for e in REGISTRY}
     board: list[dict[str, Any]] = []
+    # floor to seconds: artifact timestamps are second-precision, so a
+    # sub-second cycle_start would call same-second publishes "stale"
+    cycle_start = datetime.now(timezone.utc).replace(microsecond=0)
 
     for doc in EXECUTION_ORDER:
         entry = by_doc[doc]
@@ -224,8 +229,18 @@ def run_full_system(pull_data: bool = False) -> dict[str, Any]:
                 status = art["status"]
                 data = art["data"]
                 warns = len(art.get("warnings", []))
-            headline = entry["headline"](data) if status == "success" \
-                else "—"
+                # a pre-existing artifact must not masquerade as this
+                # cycle's output — verify it was published after we started
+                published = datetime.fromisoformat(art["finished_utc"])
+                if status == "success" and published < cycle_start:
+                    status = "stale"
+                    data = {}
+            if status == "success":
+                headline = entry["headline"](data)
+            elif status == "stale":
+                headline = "artifact predates this run — upstream did not publish"
+            else:
+                headline = "—"
         except Exception as exc:
             status, headline, warns = "failed", f"{type(exc).__name__}: {exc}", 0
         board.append({"doc": doc, "title": entry["title"],

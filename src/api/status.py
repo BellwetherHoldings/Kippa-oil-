@@ -9,7 +9,6 @@ Publishes: data/api_status.json
 
 from __future__ import annotations
 
-import os
 import sys
 from datetime import date
 from pathlib import Path
