@@ -218,6 +218,25 @@ COMMANDS = {
 }
 
 
+# artifact backing each read command, for --json output (doc 016: output
+# formats beyond human-readable tables)
+JSON_ARTIFACTS = {
+    ("signal", "show"): "composite_signal",
+    ("geo", "status"): "geopolitical_risk",
+    ("supply", "status"): "supply_chain_stress",
+    ("sentiment", "show"): "market_sentiment",
+    ("macro", "show"): "macro_conditions",
+    ("risk", "status"): "risk_assessment",
+    ("confidence", "show"): "signal_confidence",
+    ("backtest", "run"): "backtest_report",
+    ("forecast", "show"): "price_forecast",
+    ("sim", "run"): "simulation_results",
+    ("strategy", "show"): "strategy_recommendation",
+    ("monitor", "status"): "monitoring_report",
+    ("data", "quality"): "data_quality_report",
+}
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="oil",
@@ -226,6 +245,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("module")
     parser.add_argument("command")
     parser.add_argument("arg", nargs="?", default=None)
+    parser.add_argument("--json", action="store_true",
+                        help="print the command's published artifact as JSON "
+                             "instead of the human-readable view")
     args = parser.parse_args(argv)
 
     handler = COMMANDS.get((args.module, args.command))
@@ -233,6 +255,19 @@ def main(argv: list[str] | None = None) -> int:
         valid = "\n  ".join(f"oil {m} {c}" for m, c in sorted(COMMANDS))
         parser.error(f"unknown command '{args.module} {args.command}'. "
                      f"Valid:\n  {valid}")
+
+    if args.json:
+        artifact = JSON_ARTIFACTS.get((args.module, args.command))
+        if artifact is None:
+            parser.error(f"--json not supported for "
+                         f"'{args.module} {args.command}'")
+        path = _REPO_ROOT / "data" / f"{artifact}.json"
+        if not path.exists():
+            parser.error(f"{artifact} not published yet — run the command "
+                         f"without --json first")
+        print(path.read_text())
+        return 0
+
     handler(args.arg)
     return 0
 

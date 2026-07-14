@@ -103,7 +103,7 @@ def test_risk_reports_uncovered_categories(tmp_path, monkeypatch):
     _standard_artifacts(tmp_path)
     monkeypatch.setattr(risk_mod, "DATA_DIR", tmp_path)
     result = RiskEngine().run()
-    assert "cybersecurity" in result.data["categories_not_covered"]
+    assert "regulatory" in result.data["categories_not_covered"]
 
 
 # ---------------------------------------------------------------------------

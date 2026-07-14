@@ -104,6 +104,33 @@ class MonitoringEngine(Engine):
                                "message": f"not refreshed for {age_days:.1f}d "
                                           f"(max {max_age}d)"})
 
+        # -- anomaly detection (doc 002): is the newest data point sane? ---------
+        import pandas as pd
+        ANOMALY_Z = 4.0
+        for fname, col, date_col in (
+            ("crude_inventories.csv", "weekly_change", "period"),
+            ("wti_prices.csv", "close", "date"),
+        ):
+            path = DATA_DIR / fname
+            if not path.exists():
+                continue
+            checks += 1
+            df = pd.read_csv(path)
+            series = df[col].dropna()
+            if len(series) < 60:
+                continue
+            if fname == "wti_prices.csv":
+                series = series.pct_change().dropna()   # returns, not levels
+            hist, latest = series.iloc[:-1], series.iloc[-1]
+            z = (latest - hist.mean()) / hist.std()
+            if abs(z) > ANOMALY_Z:
+                alerts.append({
+                    "tier": "high", "target": fname,
+                    "message": f"latest {col} is a {z:+.1f}σ outlier vs "
+                               f"history — verify the source before "
+                               f"engines consume it",
+                })
+
         # -- engine run log: failures in the last 100 runs ------------------------
         recent_failures = []
         if RUN_LOG.exists():

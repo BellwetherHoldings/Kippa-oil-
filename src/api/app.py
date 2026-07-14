@@ -33,11 +33,16 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from src.engines.base import DATA_DIR
+from src.engines import base as _base
 
 load_dotenv(_REPO_ROOT / ".env")
 
 RATE_LIMIT_PER_MIN = 60
+
+# RBAC (doc 022): keys are "value" (readonly) or "value:admin" in
+# PLATFORM_API_KEYS. Admin-only resources expose platform internals.
+ADMIN_RESOURCES = {"monitoring"}
+API_AUDIT_LOG = _REPO_ROOT / "logs" / "api_audit.jsonl"
 
 # resource name → artifact file
 RESOURCES = {
@@ -65,9 +70,34 @@ app = FastAPI(
 _rate: dict[str, list[float]] = {}
 
 
-def _keys() -> set[str]:
+def _keys() -> dict[str, str]:
+    """Parse PLATFORM_API_KEYS into {key_value: role}."""
     raw = os.getenv("PLATFORM_API_KEYS", "")
-    return {k.strip() for k in raw.split(",") if k.strip()}
+    keys: dict[str, str] = {}
+    for entry in raw.split(","):
+        entry = entry.strip()
+        if not entry:
+            continue
+        value, _, role = entry.partition(":")
+        keys[value] = role or "readonly"
+    return keys
+
+
+def _audit(request_id: str, method: str, path: str, key: str,
+           status_code: int) -> None:
+    import hashlib
+    API_AUDIT_LOG.parent.mkdir(parents=True, exist_ok=True)
+    fingerprint = hashlib.sha256(key.encode()).hexdigest()[:12] if key \
+        else "anonymous"
+    with API_AUDIT_LOG.open("a") as fh:
+        fh.write(json.dumps({
+            "at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            "request_id": request_id,
+            "method": method,
+            "path": path,
+            "key_fingerprint": fingerprint,   # never the key itself
+            "status": status_code,
+        }) + "\n")
 
 
 def _envelope(request_id: str, status: str, payload=None, error=None,
@@ -90,36 +120,45 @@ async def auth_and_rate_limit(request: Request, call_next):
     request_id = uuid.uuid4().hex[:12]
     request.state.request_id = request_id
     path = request.url.path
+    supplied = request.headers.get("X-API-Key", "")
+
+    def deny(code: str, message: str, http_status: int):
+        _audit(request_id, request.method, path, supplied, http_status)
+        return _envelope(request_id, "error",
+                         error={"code": code, "message": message},
+                         http_status=http_status)
 
     if path.startswith("/api/v1") and path not in (
         "/api/v1/health", "/api/v1/docs", "/api/v1/openapi.json",
     ):
-        supplied = request.headers.get("X-API-Key", "")
         valid = _keys()
         if not valid:
-            return _envelope(request_id, "error",
-                             error={"code": "SERVER_NOT_CONFIGURED",
-                                    "message": "PLATFORM_API_KEYS not set."},
-                             http_status=503)
+            return deny("SERVER_NOT_CONFIGURED",
+                        "PLATFORM_API_KEYS not set.", 503)
         if supplied not in valid:
-            return _envelope(request_id, "error",
-                             error={"code": "UNAUTHORIZED",
-                                    "message": "Missing or invalid X-API-Key."},
-                             http_status=401)
+            return deny("UNAUTHORIZED",
+                        "Missing or invalid X-API-Key.", 401)
+
+        # RBAC: admin-only resources (doc 022 authorization before logic)
+        resource = path.removeprefix("/api/v1/")
+        if resource in ADMIN_RESOURCES and valid[supplied] != "admin":
+            return deny("FORBIDDEN",
+                        f"'{resource}' requires the admin role.", 403)
 
         # fixed-window per-key rate limit
         now = time.monotonic()
         window = [t for t in _rate.get(supplied, []) if now - t < 60]
         if len(window) >= RATE_LIMIT_PER_MIN:
-            return _envelope(request_id, "error",
-                             error={"code": "RATE_LIMITED",
-                                    "message": f"Limit "
-                                               f"{RATE_LIMIT_PER_MIN}/min."},
-                             http_status=429)
+            return deny("RATE_LIMITED",
+                        f"Limit {RATE_LIMIT_PER_MIN}/min.", 429)
         window.append(now)
         _rate[supplied] = window
 
-    return await call_next(request)
+    response = await call_next(request)
+    if path.startswith("/api/v1") and path != "/api/v1/health":
+        _audit(request_id, request.method, path, supplied,
+               response.status_code)
+    return response
 
 
 @app.get("/api/v1/health")
@@ -145,7 +184,7 @@ async def get_resource(resource: str, request: Request):
                                 "message": f"Unknown resource '{resource}'. "
                                            f"See /api/v1/resources."},
                          http_status=404)
-    path = DATA_DIR / f"{artifact_name}.json"
+    path = _base.DATA_DIR / f"{artifact_name}.json"
     if not path.exists():
         return _envelope(request_id, "error",
                          error={"code": "NOT_PUBLISHED",

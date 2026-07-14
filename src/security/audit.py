@@ -87,12 +87,28 @@ def run_audit() -> dict:
                 })
     checks += scanned
 
-    return {
+    report = {
         "status": "fail" if findings else "pass",
         "checks_run": checks,
         "tracked_files_scanned": scanned,
         "findings": findings,
     }
+
+    # publish for downstream consumers (risk engine's cybersecurity category)
+    import json
+    from datetime import datetime, timezone
+    data_dir = _REPO_ROOT / "data"
+    data_dir.mkdir(exist_ok=True)
+    (data_dir / "security_audit.json").write_text(json.dumps({
+        "engine": "security_audit",
+        "status": "success",
+        "finished_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "data": report,
+        "evidence": [f"git ls-files scan of {scanned} tracked files"],
+        "warnings": [],
+        "error": None,
+    }, indent=2))
+    return report
 
 
 def main() -> None:

@@ -29,10 +29,9 @@ if str(_REPO_ROOT) not in sys.path:
 
 from src.engines.base import DATA_DIR, Engine
 
-# Doc 007 defines nine categories; v1 covers five with live data.
-UNCOVERED_CATEGORIES = [
-    "demand", "regulatory", "operational", "cybersecurity",
-]
+# Doc 007 defines nine categories; regulatory remains the only one
+# without a live data source.
+UNCOVERED_CATEGORIES = ["regulatory"]
 
 RISK_LEVELS = (
     (20, "low"),
@@ -55,6 +54,13 @@ MITIGATIONS = {
     "economic": "Watch dollar strength and industrial production momentum; "
                 "a macro headwind can cap price upside even in a supply "
                 "shock.",
+    "demand": "Track industrial production and refinery runs; demand "
+              "destruction above ~$100 WTI historically caps rallies.",
+    "operational": "Resolve monitoring alerts before relying on outputs; "
+                   "degraded pipelines produce stale or missing signals.",
+    "cybersecurity": "Keep the security audit green: secrets in .env only, "
+                     "rotate keys on exposure, review audit findings "
+                     "before every push.",
 }
 
 
@@ -161,6 +167,54 @@ class RiskEngine(Engine):
                 "mitigation": MITIGATIONS["economic"],
             })
             evidence.extend(macro.get("evidence", []))
+
+        # -- demand risk (industrial demand rolling over) -------------------------
+        if macro and macro.get("status") == "success":
+            indpro = next(
+                (c for c in macro["data"]["components"]
+                 if c["indicator"] == "industrial_production"), None)
+            if indpro:
+                prob = round((1.0 - indpro["signal"]) / 2.0, 2)
+                assessments.append({
+                    "category": "demand",
+                    "probability": prob,
+                    "impact": 0.7,
+                    "score": round(100 * prob * 0.7, 1),
+                    "basis": f"Industrial production signal "
+                             f"{indpro['signal']:+.2f} ({indpro['detail']})",
+                    "mitigation": MITIGATIONS["demand"],
+                })
+
+        # -- operational risk (our own pipeline health) ----------------------------
+        mon = _load("monitoring_report")
+        if mon and mon.get("status") == "success":
+            health = mon["data"]["health"]
+            prob = {"healthy": 0.1, "degraded": 0.5, "critical": 0.9}[health]
+            assessments.append({
+                "category": "operational",
+                "probability": prob,
+                "impact": 0.5,
+                "score": round(100 * prob * 0.5, 1),
+                "basis": f"Platform health {health} "
+                         f"({len(mon['data']['alerts'])} alerts)",
+                "mitigation": MITIGATIONS["operational"],
+            })
+
+        # -- cybersecurity risk (secrets hygiene) -----------------------------------
+        sec = _load("security_audit")
+        if sec and sec.get("status") == "success":
+            audit_status = sec["data"]["status"]
+            prob = 0.1 if audit_status == "pass" else 0.9
+            assessments.append({
+                "category": "cybersecurity",
+                "probability": prob,
+                "impact": 0.8,
+                "score": round(100 * prob * 0.8, 1),
+                "basis": f"Security audit {audit_status} "
+                         f"({sec['data']['tracked_files_scanned']} files, "
+                         f"{len(sec['data']['findings'])} findings)",
+                "mitigation": MITIGATIONS["cybersecurity"],
+            })
 
         # -- model/data risk (staleness of our own inputs) --------------------------
         comp = _load("composite_signal")

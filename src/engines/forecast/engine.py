@@ -39,7 +39,11 @@ from src.engines.base import DATA_DIR, Engine
 from src.engines.data_processing.features import build_weekly_panel
 
 FEATURES = ["surprise_z", "momentum_5d", "vol_20d"]
-TARGET = "fwd_ret_4w"
+HORIZONS = {          # target column → calendar days
+    "fwd_ret_1w": 7,
+    "fwd_ret_4w": 28,
+}
+PRIMARY_TARGET = "fwd_ret_4w"
 HORIZON_DAYS = 28
 
 
@@ -51,7 +55,8 @@ class ForecastEngine(Engine):
     def execute(
         self, inputs: dict[str, Any], warnings: list[str]
     ) -> tuple[dict[str, Any], list[str]]:
-        panel = build_weekly_panel().dropna(subset=FEATURES + [TARGET])
+        panel = build_weekly_panel().dropna(
+            subset=FEATURES + list(HORIZONS))
         n = len(panel)
 
         # standardize features for comparable coefficients
@@ -59,15 +64,6 @@ class ForecastEngine(Engine):
         mu, sd = X.mean(axis=0), X.std(axis=0)
         Xs = (X - mu) / sd
         A = np.column_stack([np.ones(n), Xs])
-        y = panel[TARGET].to_numpy(dtype=float)
-
-        beta, *_ = np.linalg.lstsq(A, y, rcond=None)
-        fitted = A @ beta
-        resid = y - fitted
-        ss_res = float((resid ** 2).sum())
-        ss_tot = float(((y - y.mean()) ** 2).sum())
-        r2 = 1.0 - ss_res / ss_tot
-        resid_sd = float(resid.std())
 
         # current feature values (freshest available from published data)
         surprise = pd.read_csv(DATA_DIR / "inventory_surprise.csv",
@@ -79,15 +75,43 @@ class ForecastEngine(Engine):
         current = np.array([latest_z, m["return_5d"],
                             m["volatility_20d_annualized"]])
         current_s = (current - mu) / sd
-
-        expected = float(beta[0] + current_s @ beta[1:])
         last_close = m["last_close"]
 
-        point = last_close * (1 + expected)
-        lo68, hi68 = (last_close * (1 + expected - resid_sd),
-                      last_close * (1 + expected + resid_sd))
-        lo95, hi95 = (last_close * (1 + expected - 2 * resid_sd),
-                      last_close * (1 + expected + 2 * resid_sd))
+        horizons: dict[str, dict[str, Any]] = {}
+        for target, days in HORIZONS.items():
+            y = panel[target].to_numpy(dtype=float)
+            beta, *_ = np.linalg.lstsq(A, y, rcond=None)
+            resid = y - A @ beta
+            r2 = 1.0 - float((resid ** 2).sum()) / \
+                float(((y - y.mean()) ** 2).sum())
+            resid_sd = float(resid.std())
+            exp_ret = float(beta[0] + current_s @ beta[1:])
+            horizons[target] = {
+                "days": days,
+                "expected_return": round(exp_ret, 4),
+                "point_forecast": round(last_close * (1 + exp_ret), 2),
+                "interval_68": [
+                    round(last_close * (1 + exp_ret - resid_sd), 2),
+                    round(last_close * (1 + exp_ret + resid_sd), 2)],
+                "interval_95": [
+                    round(last_close * (1 + exp_ret - 2 * resid_sd), 2),
+                    round(last_close * (1 + exp_ret + 2 * resid_sd), 2)],
+                "r_squared": round(r2, 4),
+                "residual_sd": round(resid_sd, 4),
+                "coefficients": {
+                    f: round(float(b), 5)
+                    for f, b in zip(FEATURES, beta[1:])
+                },
+                "intercept": round(float(beta[0]), 5),
+            }
+
+        primary = horizons[PRIMARY_TARGET]
+        expected = primary["expected_return"]
+        point = primary["point_forecast"]
+        lo68, hi68 = primary["interval_68"]
+        lo95, hi95 = primary["interval_95"]
+        r2 = primary["r_squared"]
+        resid_sd = primary["residual_sd"]
 
         warnings.append(
             "Model estimated on 2011-2026 data WITHOUT a geopolitical "
@@ -110,16 +134,14 @@ class ForecastEngine(Engine):
             "point_forecast": round(point, 2),
             "interval_68": [round(lo68, 2), round(hi68, 2)],
             "interval_95": [round(lo95, 2), round(hi95, 2)],
+            "horizons": horizons,
             "model": {
-                "type": "OLS, standardized features",
+                "type": "OLS, standardized features, per-horizon fits",
                 "n_weeks": n,
-                "r_squared": round(r2, 4),
-                "residual_sd_4w": round(resid_sd, 4),
-                "intercept": round(float(beta[0]), 5),
-                "coefficients": {
-                    f: round(float(b), 5)
-                    for f, b in zip(FEATURES, beta[1:])
-                },
+                "r_squared": r2,
+                "residual_sd_4w": resid_sd,
+                "intercept": primary["intercept"],
+                "coefficients": primary["coefficients"],
                 "current_features": {
                     f: round(float(v), 4) for f, v in zip(FEATURES, current)
                 },

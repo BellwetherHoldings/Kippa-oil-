@@ -100,6 +100,39 @@ class SimulationEngine(Engine):
                     (paths.min(axis=1) / spot) - 1)), 3),
             })
 
+        # -- sensitivity analysis (doc 011): how fragile is each scenario's
+        #    median to its own assumptions? ±25% on each overlay parameter.
+        sensitivity = []
+        for sc in scenarios:
+            if sc["id"] == "baseline":
+                continue
+            span = sc["first_n_days"] or HORIZON_DAYS
+            entry = {"id": sc["id"], "parameters": {}}
+            base_median = None
+            for d_mult, v_mult, label in (
+                (1.0, 1.0, "as_defined"),
+                (1.25, 1.0, "drift_+25%"), (0.75, 1.0, "drift_-25%"),
+                (1.0, 1.25, "vol_+25%"), (1.0, 0.75, "vol_-25%"),
+            ):
+                r = (base - mean_ret) * sc["vol_mult"] * v_mult + mean_ret
+                drift = np.zeros(HORIZON_DAYS)
+                drift[:span] = sc["drift_shift_daily"] * d_mult
+                terminal = spot * np.prod(1 + r + drift, axis=1)
+                median = float(np.median(terminal))
+                if label == "as_defined":
+                    base_median = median
+                else:
+                    entry["parameters"][label] = {
+                        "p50": round(median, 2),
+                        "delta_vs_defined": round(median - base_median, 2),
+                    }
+            entry["p50_as_defined"] = round(base_median, 2)
+            entry["dominant_assumption"] = max(
+                entry["parameters"],
+                key=lambda k: abs(entry["parameters"][k]["delta_vs_defined"]),
+            )
+            sensitivity.append(entry)
+
         if (date.today() - anchor_date).days > 5:
             warnings.append(
                 f"Simulations anchored at ${spot:.2f} ({anchor_date}) — "
@@ -116,6 +149,7 @@ class SimulationEngine(Engine):
             "method": f"block bootstrap (block={BLOCK}) of last "
                       f"{len(returns)} daily returns, seeded ({SEED})",
             "scenarios": results,
+            "sensitivity": sensitivity,
         }
         evidence = [
             f"data/wti_prices.csv daily returns through {anchor_date}",

@@ -73,11 +73,15 @@ def test_unknown_workflow_raises():
 # ---------------------------------------------------------------------------
 
 @pytest.fixture()
-def client(monkeypatch):
+def client(monkeypatch, tmp_path):
     from fastapi.testclient import TestClient
 
     import src.api.app as api
+    import src.engines.base as base
     monkeypatch.setenv("PLATFORM_API_KEYS", "test-key-1,test-key-2")
+    # serve the real published artifacts, not the isolated test dir
+    monkeypatch.setattr(base, "DATA_DIR", REPO_ROOT / "data")
+    monkeypatch.setattr(api, "API_AUDIT_LOG", tmp_path / "api_audit.jsonl")
     api._rate.clear()
     return TestClient(api.app)
 
