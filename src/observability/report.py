@@ -21,18 +21,19 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from src.engines.base import RUN_LOG
+from src.engines import base as _base
 
 
 def build_report() -> dict:
-    if not RUN_LOG.exists():
-        raise FileNotFoundError(f"{RUN_LOG} not found — no engine has run yet.")
+    run_log = _base.RUN_LOG
+    if not run_log.exists():
+        raise FileNotFoundError(f"{run_log} not found — no engine has run yet.")
 
     stats: dict[str, dict] = defaultdict(
         lambda: {"runs": 0, "failures": 0, "total_ms": 0,
                  "max_ms": 0, "last_status": None, "last_finished": None}
     )
-    for line in RUN_LOG.read_text().strip().splitlines():
+    for line in run_log.read_text().strip().splitlines():
         run = json.loads(line)
         s = stats[run["engine"]]
         s["runs"] += 1

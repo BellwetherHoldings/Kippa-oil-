@@ -1,0 +1,14 @@
+{
+  "_schema": "Roadmap registry (docs/018_Future_Ideas.md). status: idea | planned | blocked | in_progress | done. blocked items must name what unblocks them.",
+  "items": [
+    {"id": "live-price-feed", "title": "Live market price feed (kill the 8-day EIA spot lag)", "status": "blocked", "unblocked_by": "any market data API key (e.g. Polygon, Twelve Data)", "doc_ref": "018 future data sources"},
+    {"id": "news-ingestion", "title": "Automated news ingestion to refresh the geopolitical event registry", "status": "planned", "doc_ref": "018 AI initiatives / 019 monitoring"},
+    {"id": "regulatory-risk-source", "title": "Regulatory risk data source (last uncovered risk category)", "status": "planned", "doc_ref": "007 risk categories"},
+    {"id": "artifact-history", "title": "Accumulate historical artifact series so geo/supply/sentiment signals become backtestable", "status": "in_progress", "doc_ref": "010 validation scope"},
+    {"id": "weekly-scheduling", "title": "Scheduled weekly_full_run after Wednesday EIA release", "status": "planned", "unblocked_by": "owner approval to create the Routine/cron", "doc_ref": "013 scheduling"},
+    {"id": "multi-commodity", "title": "Expand to natural gas, refined products, and other commodities", "status": "idea", "doc_ref": "018 commodity expansion"},
+    {"id": "sdk-clients", "title": "Client SDKs for the platform API", "status": "idea", "doc_ref": "018 API ecosystem"},
+    {"id": "digital-twin", "title": "Supply chain digital twin simulations", "status": "idea", "doc_ref": "018 advanced simulation"},
+    {"id": "sentiment-nlp", "title": "AI-assisted news/narrative clustering for sentiment", "status": "idea", "doc_ref": "021 alternative sources"}
+  ]
+}

@@ -24,6 +24,8 @@ Governed by docs/016_CLI.md. Commands:
     oil security audit     Secrets hygiene scan of tracked files
     oil deploy check       Release-readiness gate (audit + tests + env)
     oil api serve          Start the API on 127.0.0.1:8000
+    oil system run [full]  Run every doc's engine (full = re-pull data first)
+    oil system status      Last full-system board
 
 Usage:
     python src/cli/oil.py <module> <command> [arg]
@@ -194,6 +196,20 @@ def _api_serve(arg=None):
     uvicorn.run("src.api.app:app", host="127.0.0.1", port=8000)
 
 
+def _system_run(arg=None):
+    from src.engines.registry import print_board, run_full_system
+    print_board(run_full_system(pull_data=(arg == "full")))
+
+
+def _system_status(arg=None):
+    import json as _json
+    path = _REPO_ROOT / "data" / "system_run.json"
+    if not path.exists():
+        raise SystemExit("No system run recorded — run: oil system run")
+    from src.engines.registry import print_board
+    print_board(_json.loads(path.read_text()))
+
+
 COMMANDS = {
     ("data", "pull"): _data_pull,
     ("data", "quality"): _data_quality,
@@ -215,6 +231,8 @@ COMMANDS = {
     ("security", "audit"): _security_audit,
     ("deploy", "check"): _deploy_check,
     ("api", "serve"): _api_serve,
+    ("system", "run"): _system_run,
+    ("system", "status"): _system_status,
 }
 
 
