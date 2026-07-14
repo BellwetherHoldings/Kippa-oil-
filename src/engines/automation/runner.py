@@ -39,6 +39,8 @@ RETRY_DELAY_S = 2
 def _step_data_pull() -> None:
     from src.data import eia_client
     eia_client.main()
+    from src.data import live_prices
+    live_prices.save_live_prices()
 
 
 def _step_inventory_surprise() -> None:

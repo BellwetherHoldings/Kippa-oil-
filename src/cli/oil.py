@@ -45,6 +45,8 @@ if str(_REPO_ROOT) not in sys.path:
 def _data_pull(arg=None):
     from src.data import eia_client
     eia_client.main()
+    from src.data import live_prices
+    live_prices.main()
 
 
 def _data_quality(arg=None):

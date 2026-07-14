@@ -55,8 +55,8 @@ class SimulationEngine(Engine):
     def execute(
         self, inputs: dict[str, Any], warnings: list[str]
     ) -> tuple[dict[str, Any], list[str]]:
-        prices = pd.read_csv(DATA_DIR / "wti_prices.csv", parse_dates=["date"])
-        prices = prices.sort_values("date")
+        from src.data.live_prices import load_price_history
+        prices = load_price_history().sort_values("date")
         returns = prices["close"].pct_change().dropna().to_numpy()
         returns = returns[-2520:]                    # last ~10 years
         spot = float(prices["close"].iloc[-1])

@@ -58,6 +58,17 @@ DATASETS = {
             "transforms": ["pagination merge", "dedupe by date"],
         },
     },
+    "wti_live.csv": {
+        "date_col": "date",
+        "value_col": "close",
+        "max_gap_days": 7,
+        "value_range": (-60.0, 300.0),
+        "lineage": {
+            "source": "Yahoo chart API, CL=F front-month futures (daily, live)",
+            "produced_by": "src/data/live_prices.py::save_live_prices",
+            "transforms": ["dedupe by date", "drop null closes"],
+        },
+    },
     "inventory_surprise.csv": {
         "date_col": "period",
         "value_col": "surprise_z",

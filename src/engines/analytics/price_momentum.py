@@ -26,6 +26,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
+from src.data.live_prices import load_price_history
 from src.engines.base import DATA_DIR, Engine
 
 PRICES_PATH = DATA_DIR / "wti_prices.csv"
@@ -52,11 +53,12 @@ class PriceMomentumEngine(Engine):
     def execute(
         self, inputs: dict[str, Any], warnings: list[str]
     ) -> tuple[dict[str, Any], list[str]]:
-        df = pd.read_csv(self.prices_path, parse_dates=["date"])
+        df = load_price_history()          # EIA history + live CL=F tail
         if len(df) < 260:
             raise ValueError(f"Need ≥260 daily closes, got {len(df)}.")
 
         df = df.sort_values("date").reset_index(drop=True)
+        price_source = df["source"].iloc[-1] if "source" in df else "RWTC"
         close = df["close"]
         returns = close.pct_change()
 
@@ -85,6 +87,7 @@ class PriceMomentumEngine(Engine):
 
         data = {
             "last_close": round(float(close.iloc[-1]), 2),
+            "price_source": price_source,
             "last_date": last_date.isoformat(),
             "staleness_days": staleness,
             "return_1d": round(float(ret_1d), 4),
@@ -96,8 +99,9 @@ class PriceMomentumEngine(Engine):
             "direction": direction,
         }
         evidence = [
-            f"EIA RWTC daily spot closes through {last_date} "
-            f"({len(df)} observations, data/wti_prices.csv)"
+            f"spliced price history through {last_date} "
+            f"({len(df)} closes; tail source: {price_source} — "
+            f"EIA RWTC + live CL=F via data/wti_live.csv)"
         ]
         return data, evidence
 
