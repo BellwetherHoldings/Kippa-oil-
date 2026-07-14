@@ -125,6 +125,45 @@ class BacktestingEngine(Engine):
             "verdict_1w": _verdict(mom_ic),
         }
 
+        # -- drift detection (doc 010): does predictive power hold over time? --
+        half = n // 2
+        early, late = panel.iloc[:half], panel.iloc[half:]
+        drift = {}
+        for label, col, invert in (
+            ("inventory_surprise", "surprise_z", True),
+            ("price_momentum_5d", "momentum_5d", False),
+        ):
+            sign = -1 if invert else 1
+            ic_early = float((early[col] * sign)
+                             .corr(early["fwd_ret_1w"], method="spearman"))
+            ic_late = float((late[col] * sign)
+                            .corr(late["fwd_ret_1w"], method="spearman"))
+            drifting = (abs(ic_early) >= IC_WEAK
+                        and abs(ic_late) < IC_WEAK) or \
+                       (ic_early * ic_late < 0 and abs(ic_early) >= IC_WEAK)
+            drift[label] = {
+                "ic_first_half": round(ic_early, 4),
+                "ic_second_half": round(ic_late, 4),
+                "drift_detected": drifting,
+            }
+            if drifting:
+                warnings.append(
+                    f"{label}: predictive power drifted "
+                    f"({ic_early:+.3f} → {ic_late:+.3f} across halves).")
+
+        # -- weight recommendation (doc 006: weights need evidence) -----------
+        inv_ic, mom_ic = max(ic_1w, 0.0), max(mom_ic, 0.0)
+        total_ic = inv_ic + mom_ic
+        weight_recommendation = {
+            "scope": "relative split of the inventory+momentum weight budget",
+            "inventory_share": round(inv_ic / total_ic, 2) if total_ic else 0.5,
+            "momentum_share": round(mom_ic / total_ic, 2) if total_ic else 0.5,
+            "basis": f"proportional to positive 1w Spearman ICs "
+                     f"(inventory {ic_1w:+.3f}, momentum {mom_ic:+.3f})",
+            "note": "Apply via config/weights.json — reviewed change, not "
+                    "automatic (human oversight invariant).",
+        }
+
         for sig in (inventory, momentum):
             v = sig.get("verdict_1w")
             if v == "not predictive":
@@ -141,6 +180,8 @@ class BacktestingEngine(Engine):
                 "to": str(panel["period"].max().date()),
             },
             "signals": [inventory, momentum],
+            "drift": drift,
+            "weight_recommendation": weight_recommendation,
             "not_backtestable_yet": [
                 "geopolitical_risk (event registry starts 2026)",
                 "supply_chain_stress / market_sentiment / macro "

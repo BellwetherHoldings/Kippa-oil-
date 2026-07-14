@@ -42,10 +42,13 @@ from src.intelligence.geopolitical.engine import GeopoliticalIntelligenceEngine
 
 SURPRISE_PATH = DATA_DIR / "inventory_surprise.csv"
 
-# Base weights (doc 006: weighting framework). Geopolitical carries the
-# most weight while a chokepoint is disrupted; these are v1 priors to be
-# re-estimated by the Wave 3 backtester.
-WEIGHTS = {
+# Weights come from config/weights.json — a version-controlled, evidence-
+# backed file (doc 006: weighting needs evidence; changes are reviewed
+# commits). The constants below are only the fallback if the config is
+# absent.
+WEIGHTS_CONFIG = _REPO_ROOT / "config" / "weights.json"
+
+_DEFAULT_WEIGHTS = {
     "geopolitical_risk": 0.28,
     "inventory_surprise": 0.18,
     "price_momentum": 0.18,
@@ -53,6 +56,22 @@ WEIGHTS = {
     "market_sentiment": 0.12,
     "macro_conditions": 0.10,
 }
+
+
+def _load_weights() -> tuple[dict[str, float], str]:
+    if WEIGHTS_CONFIG.exists():
+        import json
+        cfg = json.loads(WEIGHTS_CONFIG.read_text())
+        w = cfg["weights"]
+        total = sum(w.values())
+        if abs(total - 1.0) > 0.001:
+            raise ValueError(
+                f"config/weights.json weights sum to {total}, not 1.0")
+        return w, f"config/weights.json v{cfg['version']}"
+    return _DEFAULT_WEIGHTS, "built-in defaults (no config/weights.json)"
+
+
+WEIGHTS, WEIGHTS_SOURCE = _load_weights()
 
 # Freshness model (doc 008 lite): each component has an expected update
 # cadence; confidence decays linearly to the floor once data outruns it.
@@ -273,6 +292,7 @@ class CompositeSignalEngine(Engine):
                 "Σ(weight × freshness_confidence); signals normalized to "
                 "[-1,+1], positive = bullish"
             ),
+            "weights_source": WEIGHTS_SOURCE,
         }
         return data, evidence
 

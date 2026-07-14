@@ -4,6 +4,7 @@ Oil Intelligence Platform CLI — oil <module> <command> [arg]
 Governed by docs/016_CLI.md. Commands:
 
     oil data pull          Refresh EIA inventories + WTI prices
+    oil data quality       Validation + lineage report for every dataset
     oil signal run         Full pipeline: data → engines → composite
                            → risk → confidence → forecast → sim → strategy
     oil signal show        Composite from existing data (no re-pull)
@@ -42,6 +43,11 @@ if str(_REPO_ROOT) not in sys.path:
 def _data_pull(arg=None):
     from src.data import eia_client
     eia_client.main()
+
+
+def _data_quality(arg=None):
+    from src.data import quality
+    quality.main()
 
 
 def _signal_show(arg=None):
@@ -190,6 +196,7 @@ def _api_serve(arg=None):
 
 COMMANDS = {
     ("data", "pull"): _data_pull,
+    ("data", "quality"): _data_quality,
     ("signal", "run"): _signal_run,
     ("signal", "show"): _signal_show,
     ("geo", "status"): _geo_status,

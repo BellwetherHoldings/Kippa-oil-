@@ -61,6 +61,7 @@ def _engine_step(import_path: str, cls_name: str) -> Callable[[], None]:
 
 STEPS: dict[str, Callable[[], None]] = {
     "data_pull": _step_data_pull,
+    "data_quality": _engine_step("src.data.quality", "DataQualityEngine"),
     "inventory_surprise": _step_inventory_surprise,
     "composite_signal": _engine_step(
         "src.engines.scoring.composite_signal", "CompositeSignalEngine"),

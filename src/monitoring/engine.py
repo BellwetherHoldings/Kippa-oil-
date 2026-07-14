@@ -41,6 +41,7 @@ ARTIFACT_MAX_AGE = {
     "price_forecast": 8,
     "simulation_results": 8,
     "strategy_recommendation": 8,
+    "data_quality_report": 8,
 }
 
 CSV_MAX_AGE = {
