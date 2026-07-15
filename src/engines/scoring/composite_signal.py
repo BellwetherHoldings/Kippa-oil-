@@ -36,7 +36,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from src.engines.base import DATA_DIR, Engine
+from src.engines.base import DATA_DIR, Engine, clip as _clip
 from src.engines.analytics.price_momentum import PriceMomentumEngine
 from src.intelligence.geopolitical.engine import GeopoliticalIntelligenceEngine
 
@@ -105,10 +105,6 @@ def _label(score: float) -> str:
         if score <= threshold:
             return label
     return "strong bullish"
-
-
-def _clip(x: float, lo: float = -1.0, hi: float = 1.0) -> float:
-    return max(lo, min(hi, x))
 
 
 class CompositeSignalEngine(Engine):

@@ -106,7 +106,7 @@ REGISTRY: list[dict[str, Any]] = [
      "headline": lambda d: f"audit {d['status']}, "
                            f"{d['tracked_files_scanned']} files"},
     {"doc": "015", "title": "Deployment", "mode": "run",
-     "module": "src.monitoring.deployment_readiness",
+     "module": "src.deployment.engine",
      "cls": "DeploymentReadinessEngine", "artifact": "deployment_readiness",
      "headline": lambda d: "ready" if d["ready"] else "NOT ready"},
     {"doc": "016", "title": "CLI", "mode": "run",
@@ -198,13 +198,12 @@ def run_full_system(pull_data: bool = False) -> dict[str, Any]:
         eia_client.main()
         from src.data.live_prices import save_live_prices
         save_live_prices()
-        import pandas as pd
-
         from src.engines.scoring.inventory_surprise import (
-            INPUT_PATH, OUTPUT_PATH, compute_surprise,
+            InventorySurpriseEngine,
         )
-        compute_surprise(pd.read_csv(INPUT_PATH)).to_csv(
-            OUTPUT_PATH, index=False)
+        surprise = InventorySurpriseEngine().run()
+        if not surprise.ok:
+            raise RuntimeError(f"inventory surprise failed: {surprise.error}")
         print()
 
     by_doc = {e["doc"]: e for e in REGISTRY}

@@ -114,7 +114,7 @@ def test_every_registered_artifact_is_api_reachable():
 
 
 def test_deployment_readiness_gates(monkeypatch):
-    from src.monitoring.deployment_readiness import DeploymentReadinessEngine
+    from src.deployment.engine import DeploymentReadinessEngine
     result = DeploymentReadinessEngine().run()
     assert result.ok
     gate_names = {g["gate"] for g in result.data["gates"]}

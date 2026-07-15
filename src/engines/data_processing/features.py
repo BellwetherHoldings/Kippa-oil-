@@ -35,8 +35,18 @@ from src.engines.base import DATA_DIR
 
 ANNUALIZATION = 252 ** 0.5
 
+# memoized on source mtimes: backtesting and forecasting both need the
+# panel in the same cycle — build it once, not twice
+_CACHE: tuple[tuple[float, float], pd.DataFrame] | None = None
+
 
 def build_weekly_panel() -> pd.DataFrame:
+    global _CACHE
+    key = ((DATA_DIR / "inventory_surprise.csv").stat().st_mtime,
+           (DATA_DIR / "wti_prices.csv").stat().st_mtime)
+    if _CACHE is not None and _CACHE[0] == key:
+        return _CACHE[1].copy()
+
     surprise = pd.read_csv(DATA_DIR / "inventory_surprise.csv",
                            parse_dates=["period"])
     prices = pd.read_csv(DATA_DIR / "wti_prices.csv", parse_dates=["date"])
@@ -66,7 +76,8 @@ def build_weekly_panel() -> pd.DataFrame:
     panel = pd.DataFrame(rows)
     if panel.empty:
         raise ValueError("Feature panel is empty — refresh the data first.")
-    return panel
+    _CACHE = (key, panel)
+    return panel.copy()
 
 
 if __name__ == "__main__":

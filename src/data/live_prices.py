@@ -75,16 +75,30 @@ def save_live_prices() -> pd.DataFrame:
 def load_price_history() -> pd.DataFrame:
     """EIA spot history spliced with the live CL=F tail.
 
-    Columns: date, close, source ('RWTC' | 'CL=F'). Falls back to EIA-only
-    when no live file exists.
+    Columns: date, close, source ('RWTC' | 'CL=F'). Degrades to EIA-only
+    when the live file is missing, empty, or unreadable — a corrupt tail
+    must never black out the whole price stack. EIA rows NEWER than the
+    live window are kept (a stale live file cannot hide fresher EIA data).
     """
     eia = pd.read_csv(DATA_DIR / "wti_prices.csv", parse_dates=["date"])
     eia["source"] = "RWTC"
     if not LIVE_PATH.exists():
         return eia
-    live = pd.read_csv(LIVE_PATH, parse_dates=["date"])
+
+    try:
+        live = pd.read_csv(LIVE_PATH, parse_dates=["date"]).dropna(
+            subset=["date", "close"])
+    except (ValueError, KeyError, OSError, pd.errors.ParserError):
+        live = pd.DataFrame()
+    if live.empty:
+        return eia
+
     live["source"] = "CL=F"
-    spliced = pd.concat([eia[eia["date"] < live["date"].min()], live])
+    spliced = pd.concat([
+        eia[eia["date"] < live["date"].min()],   # history before the tail
+        live,                                     # the live tail
+        eia[eia["date"] > live["date"].max()],   # EIA fresher than the tail
+    ])
     return spliced.sort_values("date").reset_index(drop=True)
 
 

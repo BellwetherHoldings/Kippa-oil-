@@ -28,7 +28,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from src.engines.base import DATA_DIR, RUN_LOG, Engine
+from src.engines.base import DATA_DIR, RUN_LOG, Engine, load_artifact
 
 EVIDENCE_BEARING_ARTIFACTS = [
     "composite_signal", "geopolitical_risk", "supply_chain_stress",
@@ -40,10 +40,7 @@ EVIDENCE_BEARING_ARTIFACTS = [
 
 
 def _artifact(name: str) -> dict | None:
-    path = DATA_DIR / f"{name}.json"
-    if not path.exists():
-        return None
-    return json.loads(path.read_text())
+    return load_artifact(name, data_dir=DATA_DIR)
 
 
 class InvariantComplianceEngine(Engine):

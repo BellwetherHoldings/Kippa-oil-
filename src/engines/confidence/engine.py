@@ -33,7 +33,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from src.engines.base import DATA_DIR, Engine
+from src.engines.base import DATA_DIR, Engine, load_artifact
 
 FACTOR_WEIGHTS = {
     "data_quality": 0.30,
@@ -76,8 +76,8 @@ class ConfidenceEngine(Engine):
     def execute(
         self, inputs: dict[str, Any], warnings: list[str]
     ) -> tuple[dict[str, Any], list[str]]:
-        comp = json.loads((DATA_DIR / "composite_signal.json").read_text())
-        if comp.get("status") != "success":
+        comp = load_artifact("composite_signal", data_dir=DATA_DIR)
+        if comp is None or comp.get("status") != "success":
             raise ValueError("Latest composite run failed — nothing to grade.")
 
         cdata = comp["data"]
@@ -115,8 +115,7 @@ class ConfidenceEngine(Engine):
         })
 
         # -- uncertainty: volatility regime ------------------------------------
-        momo = json.loads((DATA_DIR / "price_momentum.json").read_text()) \
-            if (DATA_DIR / "price_momentum.json").exists() else None
+        momo = load_artifact("price_momentum", data_dir=DATA_DIR)
         if momo and momo.get("status") == "success":
             vol = momo["data"]["volatility_20d_annualized"]
             calm = 1.0 - (vol - VOL_FLOOR) / (VOL_CEIL - VOL_FLOOR)

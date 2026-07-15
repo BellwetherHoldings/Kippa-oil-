@@ -44,12 +44,10 @@ def _step_data_pull() -> None:
 
 
 def _step_inventory_surprise() -> None:
-    import pandas as pd
-    from src.engines.scoring.inventory_surprise import (
-        INPUT_PATH, OUTPUT_PATH, compute_surprise,
-    )
-    df = compute_surprise(pd.read_csv(INPUT_PATH))
-    df.to_csv(OUTPUT_PATH, index=False)
+    from src.engines.scoring.inventory_surprise import InventorySurpriseEngine
+    result = InventorySurpriseEngine().run()
+    if not result.ok:
+        raise RuntimeError(result.error)
 
 
 def _engine_step(import_path: str, cls_name: str) -> Callable[[], None]:

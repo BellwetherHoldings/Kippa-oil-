@@ -27,7 +27,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from src.engines.base import DATA_DIR, Engine
+from src.engines.base import DATA_DIR, Engine, classify, load_artifact
 
 # Doc 007 defines nine categories; regulatory remains the only one
 # without a live data source.
@@ -65,17 +65,11 @@ MITIGATIONS = {
 
 
 def _risk_level(score: float) -> str:
-    for threshold, label in RISK_LEVELS:
-        if score < threshold:
-            return label
-    return "critical"
+    return classify(score, RISK_LEVELS)
 
 
 def _load(name: str) -> dict[str, Any] | None:
-    path = DATA_DIR / f"{name}.json"
-    if not path.exists():
-        return None
-    return json.loads(path.read_text())
+    return load_artifact(name, data_dir=DATA_DIR)
 
 
 class RiskEngine(Engine):

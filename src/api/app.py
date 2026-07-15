@@ -175,20 +175,20 @@ async def auth_and_rate_limit(request: Request, call_next):
 
 
 @app.get("/api/v1/health")
-async def health(request: Request):
+def health(request: Request):
     return _envelope(request.state.request_id, "ok",
                      payload={"service": "oil-intelligence-api",
                               "version": "1.0"})
 
 
 @app.get("/api/v1/resources")
-async def resources(request: Request):
+def resources(request: Request):
     return _envelope(request.state.request_id, "ok",
                      payload={"resources": sorted(RESOURCES)})
 
 
 @app.get("/api/v1/{resource}")
-async def get_resource(resource: str, request: Request):
+def get_resource(resource: str, request: Request):
     request_id = request.state.request_id
     artifact_name = RESOURCES.get(resource)
     if artifact_name is None:

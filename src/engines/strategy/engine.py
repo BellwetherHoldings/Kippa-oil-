@@ -28,7 +28,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from src.engines.base import DATA_DIR, Engine
+from src.engines.base import DATA_DIR, Engine, load_artifact
 
 SIZE_BY_TIER = {
     "very_high": 1.0,
@@ -40,11 +40,7 @@ SIZE_BY_TIER = {
 
 
 def _load(name: str) -> dict[str, Any] | None:
-    path = DATA_DIR / f"{name}.json"
-    if not path.exists():
-        return None
-    art = json.loads(path.read_text())
-    return art if art.get("status") == "success" else None
+    return load_artifact(name, data_dir=DATA_DIR, require_success=True)
 
 
 class StrategyEngine(Engine):

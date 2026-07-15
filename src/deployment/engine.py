@@ -24,7 +24,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from src.engines.base import DATA_DIR, Engine
+from src.engines.base import DATA_DIR, Engine, load_artifact
 from src.security.audit import run_audit
 
 load_dotenv(_REPO_ROOT / ".env")
@@ -46,9 +46,24 @@ class DeploymentReadinessEngine(Engine):
             gates.append({"gate": f"env:{var}",
                           "passed": bool(os.getenv(var))})
 
-        audit = run_audit()
-        gates.append({"gate": "security_audit",
-                      "passed": audit["status"] == "pass"})
+        # reuse this cycle's published audit instead of re-scanning the
+        # whole repo (SecurityEngine runs earlier in every workflow); fall
+        # back to a live scan when the artifact is missing or >1h old
+        from datetime import datetime, timezone
+        sec = load_artifact("security_audit", data_dir=DATA_DIR,
+                            require_success=True)
+        audit_pass, audit_src = None, "live scan"
+        if sec:
+            age_s = (datetime.now(timezone.utc)
+                     - datetime.fromisoformat(sec["finished_utc"])
+                     ).total_seconds()
+            if age_s < 3600:
+                audit_pass = sec["data"]["status"] == "pass"
+                audit_src = "published artifact"
+        if audit_pass is None:
+            audit_pass = run_audit()["status"] == "pass"
+        gates.append({"gate": "security_audit", "passed": audit_pass,
+                      "source": audit_src})
 
         env_cfg = _REPO_ROOT / "config" / "environments.json"
         cfg_ok = False

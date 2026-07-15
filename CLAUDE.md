@@ -39,7 +39,7 @@ The `docs/` directory is the architectural bible. It is organized into four laye
 | [012 Observability System](docs/012_Observability_System.md) | Metrics, logs, traces, events, diagnostics, dashboards | `src/observability/` |
 | [013 Automation](docs/013_Automation.md) | Scheduling, triggers, workflows, failure recovery | `src/engines/automation/` |
 | [014 Security](docs/014_Security.md) | Auth, encryption, secrets, audit, threat detection, incident response | `src/security/` |
-| [015 Deployment](docs/015_Deployment.md) | CI/CD, environments, IaC, migrations, rollback | `config/`, deployment scripts |
+| [015 Deployment](docs/015_Deployment.md) | CI/CD, environments, IaC, migrations, rollback | `config/`, `src/deployment/` |
 | [016 CLI](docs/016_CLI.md) | Command structure (`oil <module> <command>`), scripting, diagnostics | `src/cli/` |
 | [022 API System](docs/022_API_System.md) | Endpoints, gateway, versioning, rate limiting, response standards | `src/api/` |
 

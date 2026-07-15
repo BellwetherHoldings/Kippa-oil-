@@ -34,7 +34,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from src.engines.base import Engine
+from src.engines.base import Engine, clip as _clip
 
 load_dotenv(_REPO_ROOT / ".env")
 
@@ -64,10 +64,6 @@ INDICATORS = {
 
 FULL_SCORE_Z = 2.0
 INDPRO_FULL_GROWTH = 0.05     # ±5% annualized growth maps to ±1
-
-
-def _clip(x: float, lo: float = -1.0, hi: float = 1.0) -> float:
-    return max(lo, min(hi, x))
 
 
 def _fred_series(series_id: str, start: str = "2018-01-01") -> pd.DataFrame:

@@ -26,7 +26,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from src.engines.base import Engine
+from src.engines.base import Engine, classify
 
 EVENTS_PATH = Path(__file__).resolve().parent / "events.json"
 
@@ -57,10 +57,7 @@ MONITORING_DISCOUNT = 0.5   # monitoring events count at half weight
 
 
 def _risk_level(score: float) -> str:
-    for threshold, label in RISK_LEVELS:
-        if score < threshold:
-            return label
-    return "critical"
+    return classify(score, RISK_LEVELS)
 
 
 class GeopoliticalIntelligenceEngine(Engine):

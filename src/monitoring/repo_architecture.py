@@ -30,7 +30,7 @@ EXPECTED_DOCS = 22
 
 REQUIRED_DIRS = [
     "docs", "config", "tests", "simulations",
-    "src/data", "src/api", "src/cli", "src/monitoring",
+    "src/data", "src/api", "src/cli", "src/monitoring", "src/deployment",
     "src/observability", "src/security",
     "src/engines/forecast", "src/engines/scoring", "src/engines/risk",
     "src/engines/confidence", "src/engines/strategy",

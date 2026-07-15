@@ -65,6 +65,8 @@ def _signal_show(arg=None):
 def _signal_run(arg=None):
     _data_pull()
     print()
+    _data_quality()      # invariant #1: data quality comes before analysis
+    print()
     _signal_show()
     print()
     _risk_status()

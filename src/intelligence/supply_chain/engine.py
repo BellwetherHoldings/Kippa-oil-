@@ -17,7 +17,8 @@ Publishes:
 from __future__ import annotations
 
 import sys
-from datetime import date
+from concurrent.futures import ThreadPoolExecutor
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -26,7 +27,7 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 from src.data.eia_client import get_series
-from src.engines.base import Engine
+from src.engines.base import Engine, classify
 
 HISTORY_WEEKS = 156          # 3-year percentile window
 
@@ -69,10 +70,7 @@ STRESS_LEVELS = (
 
 
 def _stress_level(score: float) -> str:
-    for threshold, label in STRESS_LEVELS:
-        if score < threshold:
-            return label
-    return "critical"
+    return classify(score, STRESS_LEVELS)
 
 
 class SupplyChainIntelligenceEngine(Engine):
@@ -90,9 +88,16 @@ class SupplyChainIntelligenceEngine(Engine):
         total_weight = 0.0
         newest: date | None = None
 
+        # four independent EIA series: fetch concurrently, and only pull
+        # what the 3-year percentile window can use (plus buffer)
+        start = (today - timedelta(days=1300)).isoformat()
+        with ThreadPoolExecutor(max_workers=len(METRICS)) as pool:
+            futures = {key: pool.submit(get_series, spec["series"], start)
+                       for key, spec in METRICS.items()}
+
         for key, spec in METRICS.items():
             try:
-                df = get_series(spec["series"], start="2018-01-01")
+                df = futures[key].result()
             except Exception as exc:
                 warnings.append(f"{key} unavailable ({exc}) — excluded.")
                 continue

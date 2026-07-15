@@ -58,7 +58,9 @@ class PriceMomentumEngine(Engine):
         returns = close.pct_change()
 
         last_date = df["date"].iloc[-1].date()
-        staleness = (date.today() - last_date).days
+        # clamp: the live CL=F bar carries the in-progress session, whose
+        # UTC-derived date can sit a day ahead during evening Globex hours
+        staleness = max(0, (date.today() - last_date).days)
         if staleness > 5:
             warnings.append(
                 f"Price data is {staleness} days old (EIA spot lags; a live "

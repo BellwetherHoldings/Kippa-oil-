@@ -104,22 +104,66 @@ def compute_surprise(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
+# Engine wrapper (doc 005 lifecycle — validate/execute/verify/log/publish)
+# ---------------------------------------------------------------------------
+
+import sys as _sys
+
+_sys.path.insert(0, str(REPO_ROOT))
+from src.engines.base import Engine  # noqa: E402
+
+
+class InventorySurpriseEngine(Engine):
+    name = "inventory_surprise"
+    version = "1.0"
+    output_name = "inventory_surprise_summary"
+
+    def validate_input(self, inputs: dict) -> None:
+        if not INPUT_PATH.exists():
+            raise ValueError(
+                f"{INPUT_PATH} not found. Run src/data/eia_client.py first.")
+
+    def execute(self, inputs: dict, warnings: list[str]):
+        df = compute_surprise(pd.read_csv(INPUT_PATH))
+        df.to_csv(OUTPUT_PATH, index=False)
+        valid = df.dropna(subset=["surprise_z"])
+        latest = valid.iloc[-1]
+        data = {
+            "rows": len(df),
+            "rows_scored": len(valid),
+            "output_csv": str(OUTPUT_PATH.relative_to(REPO_ROOT)),
+            "latest": {
+                "period": str(latest["period"].date()),
+                "surprise_z": round(float(latest["surprise_z"]), 3),
+                "surprise_kbbl": round(float(latest["surprise"]), 1),
+                "expected_change_kbbl": round(
+                    float(latest["expected_change"]), 1),
+            },
+        }
+        evidence = [f"{INPUT_PATH.name} through {latest['period'].date()} "
+                    f"({len(df)} weekly rows)"]
+        return data, evidence
+
+    def verify_output(self, data: dict) -> None:
+        super().verify_output(data)
+        if abs(data["latest"]["surprise_z"]) > 10:
+            raise ValueError("surprise_z beyond ±10 — inputs look broken")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
 def main() -> None:
-    if not INPUT_PATH.exists():
-        raise FileNotFoundError(
-            f"{INPUT_PATH} not found. Run src/data/eia_client.py first."
-        )
+    result = InventorySurpriseEngine().run()
+    if not result.ok:
+        raise SystemExit(f"Engine failed: {result.error}")
 
-    df = pd.read_csv(INPUT_PATH)
-    df = compute_surprise(df)
+    df = pd.read_csv(OUTPUT_PATH, parse_dates=["period"])
 
     # Keep only rows where the signal is fully defined
     valid = df.dropna(subset=["surprise_z"]).copy()
 
-    df.to_csv(OUTPUT_PATH, index=False)
     print(f"Saved {len(df)} rows to {OUTPUT_PATH}")
     print(f"({len(valid)} rows have a complete surprise z-score)\n")
 

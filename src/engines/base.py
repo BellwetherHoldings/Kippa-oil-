@@ -27,6 +27,44 @@ LOG_DIR = REPO_ROOT / "logs"
 RUN_LOG = LOG_DIR / "engine_runs.jsonl"
 
 
+def clip(x: float, lo: float = -1.0, hi: float = 1.0) -> float:
+    """Bound a signal to [lo, hi] — the platform's standard signal range."""
+    return max(lo, min(hi, x))
+
+
+def classify(value: float, levels: tuple[tuple[float, str], ...]) -> str:
+    """Map a score onto an ascending (threshold, label) table.
+
+    Returns the label of the first threshold the value is below; the last
+    label catches everything else. Shared by every engine that publishes
+    a leveled score (risk, stress, confidence, geo).
+    """
+    for threshold, label in levels:
+        if value < threshold:
+            return label
+    return levels[-1][1]
+
+
+def load_artifact(
+    name: str,
+    data_dir: Path | None = None,
+    require_success: bool = False,
+) -> dict[str, Any] | None:
+    """Read a published engine artifact envelope from the data tier.
+
+    Returns None when missing — and, with require_success, also when the
+    producing run failed. One reader, one set of semantics, instead of a
+    per-engine reimplementation.
+    """
+    path = (data_dir or DATA_DIR) / f"{name}.json"
+    if not path.exists():
+        return None
+    artifact = json.loads(path.read_text())
+    if require_success and artifact.get("status") != "success":
+        return None
+    return artifact
+
+
 @dataclass
 class EngineResult:
     """Standardized output envelope for every engine run."""
