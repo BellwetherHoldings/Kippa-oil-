@@ -1,18 +1,31 @@
 {
   "_schema": {
     "description": "Curated geopolitical event registry per docs/019_Geopolitical_Intelligence.md. Every event must carry sources (invariant: no unverified data). severity and oil_supply_impact are 0-10; confidence is 0-1. status: active | monitoring | resolved. Resolved events are kept forever (invariant: historical information must remain preserved).",
-    "chokepoint_keys": ["strait_of_hormuz", "strait_of_malacca", "suez_canal", "bab_el_mandeb", "danish_straits", "turkish_straits", "panama_canal"]
+    "chokepoint_keys": [
+      "strait_of_hormuz",
+      "strait_of_malacca",
+      "suez_canal",
+      "bab_el_mandeb",
+      "danish_straits",
+      "turkish_straits",
+      "panama_canal"
+    ]
   },
   "events": [
     {
       "id": "hormuz-closure-2026",
       "category": "chokepoint_disruption",
       "region": "Middle East",
-      "countries": ["Iran", "United States", "Israel", "Qatar"],
+      "countries": [
+        "Iran",
+        "United States",
+        "Israel",
+        "Qatar"
+      ],
       "chokepoint": "strait_of_hormuz",
-      "description": "Iran closed the Strait of Hormuz on 2026-02-28 following the US/Israel air campaign. Partially reopened in early July 2026 after a US-Iran memorandum of understanding and indirect talks in Qatar, then re-closed on 2026-07-13 amid renewed missile exchanges. Approximately 25% of seaborne oil trade and 20% of global LNG transits this chokepoint.",
+      "description": "Iran closed the Strait of Hormuz on 2026-02-28 following the US/Israel air campaign. Partially reopened in early July 2026 after a US-Iran MoU, then re-closed on 2026-07-13 amid renewed exchanges. Ships attacked in the strait 2026-07-07; US strikes on Iran followed 2026-07-11. IRGC declares the strait closed; CENTCOM reports reduced traffic via the southern Omani corridor only. ~25% of seaborne oil trade transits this chokepoint.",
       "start_date": "2026-02-28",
-      "last_update": "2026-07-14",
+      "last_update": "2026-07-15",
       "status": "active",
       "severity": 10,
       "oil_supply_impact": 10,
@@ -20,6 +33,9 @@
       "sources": [
         "https://en.wikipedia.org/wiki/2026_Strait_of_Hormuz_crisis",
         "https://www.aljazeera.com/news/2026/7/2/with-hormuz-reopened-has-the-oil-shortage-turned-into-a-glut",
+        "https://www.aljazeera.com/news/2026/7/7/ships-attacked-in-the-strait-of-hormuz-what-that-means-for-ongoing-talks",
+        "https://www.aljazeera.com/news/liveblog/2026/7/11/iran-war-live-us-demands-iran-publicly-state-strait-of-hormuz-open-for-all",
+        "https://www.cnn.com/2026/07/11/world/live-news/iran-war-trump",
         "https://www.pbs.org/newshour/show/what-may-happen-as-oil-supplies-dwindle-and-strait-of-hormuz-remains-mostly-closed"
       ]
     },
@@ -27,35 +43,46 @@
       "id": "us-israel-iran-conflict-2026",
       "category": "armed_conflict",
       "region": "Middle East",
-      "countries": ["Iran", "United States", "Israel"],
+      "countries": [
+        "Iran",
+        "United States",
+        "Israel"
+      ],
       "chokepoint": null,
       "description": "Active military conflict between the US/Israel and Iran since late February 2026, including ongoing missile exchanges as of mid-July 2026. Drives the Hormuz closure and poses direct risk to Gulf production, export terminals, and shipping.",
       "start_date": "2026-02-28",
-      "last_update": "2026-07-14",
+      "last_update": "2026-07-15",
       "status": "active",
       "severity": 9,
       "oil_supply_impact": 7,
       "confidence": 0.95,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_Strait_of_Hormuz_crisis",
-        "https://tradingeconomics.com/commodity/crude-oil"
+        "https://tradingeconomics.com/commodity/crude-oil",
+        "https://www.cnn.com/2026/07/11/world/live-news/iran-war-trump"
       ]
     },
     {
       "id": "us-iran-qatar-talks-2026",
       "category": "diplomatic_negotiation",
       "region": "Middle East",
-      "countries": ["United States", "Iran", "Qatar"],
+      "countries": [
+        "United States",
+        "Iran",
+        "Qatar"
+      ],
       "chokepoint": "strait_of_hormuz",
-      "description": "US-Iran indirect negotiations in Qatar produced a memorandum of understanding that briefly reopened Hormuz in early July 2026. Talks remain the primary de-escalation path; headlines around them whipsaw prices in both directions.",
+      "description": "De-escalation diplomacy has shifted to Muscat: an Iranian delegation led by FM Araghchi visited Oman for talks on reopening the strait; France and Britain are studying Omani-drafted proposals for IMO-supervised navigational fees. Mediation channels are strained (Oman and Qatar both struck by Iran on 2026-07-12; Pakistan track suspended). Headlines around these talks whipsaw prices in both directions.",
       "start_date": "2026-06-25",
-      "last_update": "2026-07-14",
+      "last_update": "2026-07-15",
       "status": "monitoring",
       "severity": 4,
       "oil_supply_impact": 3,
       "confidence": 0.8,
       "sources": [
-        "https://www.aljazeera.com/news/2026/7/2/with-hormuz-reopened-has-the-oil-shortage-turned-into-a-glut"
+        "https://en.wikipedia.org/wiki/2026_Strait_of_Hormuz_crisis",
+        "https://www.aljazeera.com/news/2026/7/2/with-hormuz-reopened-has-the-oil-shortage-turned-into-a-glut",
+        "https://www.ms.now/news/after-another-broken-ceasefire-with-u-s-iran-talks-with-gulf-leaders"
       ]
     }
   ]
