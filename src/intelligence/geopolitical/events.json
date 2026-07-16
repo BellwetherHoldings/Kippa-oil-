@@ -23,18 +23,21 @@
         "Qatar"
       ],
       "chokepoint": "strait_of_hormuz",
-      "description": "Iran closed the Strait of Hormuz on 2026-02-28 following the US/Israel air campaign. Partially reopened in early July 2026 after a US-Iran MoU, then re-closed on 2026-07-13 amid renewed exchanges. Ships attacked in the strait 2026-07-07; US strikes on Iran followed 2026-07-11. IRGC declares the strait closed; CENTCOM reports reduced traffic via the southern Omani corridor only. ~25% of seaborne oil trade transits this chokepoint.",
+      "description": "Iran closed the Strait of Hormuz on 2026-02-28; re-closed 2026-07-13 after a brief early-July reopening. As of 07-16: US airstrikes on Iran continue for a fourth day, Washington has reinstated its naval blockade of Iranian ports near the strait, and a tanker bound for Iran was disabled. Transits fell >50% week-over-week (57 Fri-Sun). ~25% of seaborne oil trade transits this chokepoint.",
       "start_date": "2026-02-28",
-      "last_update": "2026-07-15",
+      "last_update": "2026-07-16",
       "status": "active",
       "severity": 10,
       "oil_supply_impact": 10,
       "confidence": 0.95,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_Strait_of_Hormuz_crisis",
+        "https://www.aljazeera.com/economy/2026/7/10/strait-of-hormuz-shipping-grinds-to-halt-as-us-iran-resume-fighting",
+        "https://www.aljazeera.com/economy/2026/7/14/oil-hits-1-month-high-as-us-iran-fighting-clouds-strait-of-hormuz-outlook",
         "https://www.aljazeera.com/news/2026/7/2/with-hormuz-reopened-has-the-oil-shortage-turned-into-a-glut",
         "https://www.aljazeera.com/news/2026/7/7/ships-attacked-in-the-strait-of-hormuz-what-that-means-for-ongoing-talks",
         "https://www.aljazeera.com/news/liveblog/2026/7/11/iran-war-live-us-demands-iran-publicly-state-strait-of-hormuz-open-for-all",
+        "https://www.cnbc.com/2026/07/15/oil-prices-today-brent-wti-hormuz-blockade.html",
         "https://www.cnn.com/2026/07/11/world/live-news/iran-war-trump",
         "https://www.pbs.org/newshour/show/what-may-happen-as-oil-supplies-dwindle-and-strait-of-hormuz-remains-mostly-closed"
       ]
@@ -51,7 +54,7 @@
       "chokepoint": null,
       "description": "Active military conflict between the US/Israel and Iran since late February 2026, including ongoing missile exchanges as of mid-July 2026. Drives the Hormuz closure and poses direct risk to Gulf production, export terminals, and shipping.",
       "start_date": "2026-02-28",
-      "last_update": "2026-07-15",
+      "last_update": "2026-07-16",
       "status": "active",
       "severity": 9,
       "oil_supply_impact": 7,
