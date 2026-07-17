@@ -142,6 +142,71 @@ class IntradayRadarEngine(Engine):
         vwap = float((typical * vol).sum() / vol.sum())
         atr30 = float((bars["high"] - bars["low"]).tail(20).mean())
 
+        # -- price bands: the honest form of "price prediction" -------------------
+        # Direction is a coin flip (measured), but volatility clusters, so
+        # WHERE price is likely to sit is forecastable. Empirical quantiles
+        # of actual signed moves from this month's bars, applied to the
+        # current price.
+        import numpy as np
+        px = float(last["close"])
+        moves_1 = bars["close"].diff().dropna().to_numpy()
+        moves_4 = bars["close"].diff(4).dropna().to_numpy()   # ~2 hours
+
+        def band(moves: "np.ndarray") -> dict[str, float]:
+            q = np.quantile(moves, [0.10, 0.25, 0.50, 0.75, 0.90])
+            return {"p10": round(px + q[0], 2), "p25": round(px + q[1], 2),
+                    "p50": round(px + q[2], 2), "p75": round(px + q[3], 2),
+                    "p90": round(px + q[4], 2)}
+
+        price_bands = {
+            "next_30m": band(moves_1),
+            "next_2h": band(moves_4),
+            "read": "80% of the time price stays inside the p10–p90 band; "
+                    "use band edges for stops/targets, not hope.",
+        }
+
+        # -- mechanical trade plans (scaffolding, not signals) ---------------------
+        comp_early = load_artifact("composite_signal", require_success=True)
+        bias = comp_early["data"]["label"] if comp_early else "neutral"
+        sess_hi = float(session["high"].max())
+        sess_lo = float(session["low"].min())
+
+        def plan(name, side, entry, stop, target, note):
+            risk = abs(entry - stop)
+            reward = abs(target - entry)
+            return {"name": name, "side": side,
+                    "entry": round(entry, 2), "stop": round(stop, 2),
+                    "target": round(target, 2),
+                    "risk_reward": round(reward / risk, 2) if risk else None,
+                    "note": note}
+
+        trade_plans = []
+        if "bull" in bias:
+            trade_plans.append(plan(
+                "VWAP pullback long", "long", vwap, vwap - atr30,
+                max(sess_hi, vwap + 1.5 * atr30),
+                "With-trend. Wait for price to come to VWAP; no chase."))
+            trade_plans.append(plan(
+                "Range breakout long", "long", sess_hi + 0.05,
+                sess_hi + 0.05 - atr30, sess_hi + 0.05 + 1.5 * atr30,
+                "With-trend. Only on a 30m close above the session high."))
+        elif "bear" in bias:
+            trade_plans.append(plan(
+                "VWAP fade short", "short", vwap, vwap + atr30,
+                min(sess_lo, vwap - 1.5 * atr30),
+                "With-trend. Wait for the bounce into VWAP."))
+            trade_plans.append(plan(
+                "Range breakdown short", "short", sess_lo - 0.05,
+                sess_lo - 0.05 + atr30, sess_lo - 0.05 - 1.5 * atr30,
+                "With-trend. Only on a 30m close below the session low."))
+        else:
+            trade_plans.append(plan(
+                "Range fade short", "short", sess_hi, sess_hi + atr30, vwap,
+                "Neutral bias: fade the top of the range back to VWAP."))
+            trade_plans.append(plan(
+                "Range fade long", "long", sess_lo, sess_lo - atr30, vwap,
+                "Neutral bias: fade the bottom of the range back to VWAP."))
+
         # -- alignment with the core position (composite) --------------------------
         comp = load_artifact("composite_signal", require_success=True)
         daily_bias = comp["data"]["label"] if comp else "unknown"
@@ -187,6 +252,8 @@ class IntradayRadarEngine(Engine):
                 "last_price": round(float(last["close"]), 2),
                 "vs_vwap": round(float(last["close"]) - vwap, 2),
             },
+            "price_bands": price_bands,
+            "trade_plans": trade_plans,
             "daily_bias": daily_bias,
             "sleeve_guidance": sleeve,
             "state_table": state_table,
@@ -229,6 +296,17 @@ def main() -> None:
     print(f"  Levels: px {lv['last_price']} | VWAP {lv['session_vwap']} "
           f"({lv['vs_vwap']:+}) | H {lv['session_high']} / L "
           f"{lv['session_low']} | ATR30 {lv['atr_30m']}")
+    pb = d["price_bands"]
+    print(f"  Price bands (empirical, this month's moves):")
+    print(f"    next 30m: p10 {pb['next_30m']['p10']} | p50 "
+          f"{pb['next_30m']['p50']} | p90 {pb['next_30m']['p90']}")
+    print(f"    next 2h : p10 {pb['next_2h']['p10']} | p50 "
+          f"{pb['next_2h']['p50']} | p90 {pb['next_2h']['p90']}")
+    print(f"  Trade plans ({d['daily_bias']} bias):")
+    for t in d["trade_plans"]:
+        print(f"    {t['name']} [{t['side'].upper()}]: entry {t['entry']} "
+              f"stop {t['stop']} target {t['target']} "
+              f"(R:R {t['risk_reward']}) — {t['note']}")
     print(f"  Sleeve: {d['sleeve_guidance']}")
     for w in result.warnings:
         print(f"  ⚠ {w}")

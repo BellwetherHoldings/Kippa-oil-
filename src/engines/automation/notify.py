@@ -132,6 +132,19 @@ def build_daytrade_embed() -> dict[str, Any] | None:
                       f"({lv['vs_vwap']:+}) \nH {lv['session_high']} / "
                       f"L {lv['session_low']} | ATR30 {lv['atr_30m']}",
              "inline": True},
+            {"name": "Price bands (80% inside p10–p90)",
+             "value": f"30m: {d['price_bands']['next_30m']['p10']} – "
+                      f"{d['price_bands']['next_30m']['p90']}\n"
+                      f"2h: {d['price_bands']['next_2h']['p10']} – "
+                      f"{d['price_bands']['next_2h']['p90']}",
+             "inline": True},
+            {"name": f"Trade plans ({d['daily_bias']} bias)",
+             "value": "\n".join(
+                 f"**{t['name']}** [{t['side'].upper()}] "
+                 f"E {t['entry']} / S {t['stop']} / T {t['target']} "
+                 f"(R:R {t['risk_reward']})"
+                 for t in d["trade_plans"]),
+             "inline": False},
             {"name": "Sleeve", "value": d["sleeve_guidance"], "inline": False},
         ],
         "footer": {"text": "Measured stats, not predictions · core position "
