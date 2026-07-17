@@ -30,6 +30,8 @@ Governed by docs/016_CLI.md. Commands:
     oil daytrade on|off    Toggle day-trade mode (intraday radar in the
                            30-min Discord feed); 'status' to check
     oil intraday show      Run the 30m candle radar once
+    oil model policy       Show which AI model each job uses, and why
+    oil model for <job>    Print the model id for one job
     oil system status      Last full-system board
 
 Usage:
@@ -235,6 +237,18 @@ def _intraday_show(arg=None):
     intraday.main()
 
 
+def _model_policy(arg=None):
+    from src.engines.automation import model_policy
+    model_policy.main([])
+
+
+def _model_for(arg=None):
+    from src.engines.automation import model_policy
+    if not arg:
+        raise SystemExit("usage: oil model for <job>")
+    model_policy.main([arg])
+
+
 def _system_run(arg=None):
     from src.engines.registry import print_board, run_full_system
     print_board(run_full_system(pull_data=(arg == "full")))
@@ -277,6 +291,8 @@ COMMANDS = {
     ("daytrade", "off"): lambda arg=None: _daytrade("off"),
     ("daytrade", "status"): lambda arg=None: _daytrade(None),
     ("intraday", "show"): _intraday_show,
+    ("model", "policy"): _model_policy,
+    ("model", "for"): _model_for,
     ("system", "status"): _system_status,
 }
 
