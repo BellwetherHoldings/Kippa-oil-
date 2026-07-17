@@ -107,6 +107,39 @@ def build_embed() -> dict[str, Any]:
     }
 
 
+def build_daytrade_embed() -> dict[str, Any] | None:
+    """Compact Day-Trade Radar embed; None if no radar artifact."""
+    radar = load_artifact("intraday_radar", require_success=True)
+    if radar is None:
+        return None
+    d = radar["data"]
+    nc, ev, lv = d["next_candle"], d["edge_verdict"], d["levels"]
+    lean_txt = ("no lean — levels only" if nc["lean"] == "none" else
+                f"{nc['lean'].upper()}  P(up) {nc['p_up']:.0%} "
+                f"(n={nc['state_sample']})")
+    edge_txt = (f"hit rate {ev['in_sample_hit_rate']:.0%} over "
+                f"{ev['predictions_scored']} predictions — "
+                + ("edge measurable" if ev["edge"] == "measurable"
+                   else "coin flip; don't trade the lean"))
+    return {
+        "title": "Day-Trade Radar — CL=F 30m",
+        "color": 0xF1C40F,
+        "fields": [
+            {"name": "Next candle",
+             "value": f"{lean_txt}\n_{edge_txt}_", "inline": False},
+            {"name": "Levels",
+             "value": f"px **{lv['last_price']}** | VWAP {lv['session_vwap']} "
+                      f"({lv['vs_vwap']:+}) \nH {lv['session_high']} / "
+                      f"L {lv['session_low']} | ATR30 {lv['atr_30m']}",
+             "inline": True},
+            {"name": "Sleeve", "value": d["sleeve_guidance"], "inline": False},
+        ],
+        "footer": {"text": "Measured stats, not predictions · core position "
+                           "unchanged · not financial advice"},
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
 def send_discord_update(content: str | None = None) -> bool:
     """Post the current market read. Returns True on success."""
     url = os.getenv("DISCORD_WEBHOOK_URL", "").strip()
@@ -115,7 +148,14 @@ def send_discord_update(content: str | None = None) -> bool:
             "DISCORD_WEBHOOK_URL not set in .env — create a webhook in "
             "Discord (Server Settings → Integrations → Webhooks) and add it.")
 
-    payload: dict[str, Any] = {"embeds": [build_embed()],
+    import json as _json
+    embeds = [build_embed()]
+    mode_path = _REPO_ROOT / "config" / "daytrade.json"
+    if mode_path.exists() and _json.loads(mode_path.read_text()).get("enabled"):
+        dt = build_daytrade_embed()
+        if dt:
+            embeds.append(dt)
+    payload: dict[str, Any] = {"embeds": embeds,
                                "username": "Kippa Oil Intelligence"}
     if content:
         payload["content"] = content

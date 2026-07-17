@@ -45,6 +45,16 @@ def run_cycle(cycle: int) -> None:
 
     started = datetime.now(timezone.utc)
     summary = run_workflow("watch_cycle")
+
+    # day-trade mode: refresh the intraday radar each cycle so the
+    # Discord post carries a current 30m read
+    import json as _json
+    mode = _REPO_ROOT / "config" / "daytrade.json"
+    if mode.exists() and _json.loads(mode.read_text()).get("enabled"):
+        from src.engines.analytics.intraday import IntradayRadarEngine
+        radar = IntradayRadarEngine().run()
+        if not radar.ok:
+            print(f"intraday radar failed: {radar.error}", file=sys.stderr)
     failed = summary["steps_failed"]
 
     from src.engines.base import load_artifact

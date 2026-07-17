@@ -27,6 +27,9 @@ Governed by docs/016_CLI.md. Commands:
     oil system run [full]  Run every doc's engine (full = re-pull data first)
     oil watch run [mins]   Continuous mode: cycle + Discord post every N min
     oil discord test       Post the current read to Discord once
+    oil daytrade on|off    Toggle day-trade mode (intraday radar in the
+                           30-min Discord feed); 'status' to check
+    oil intraday show      Run the 30m candle radar once
     oil system status      Last full-system board
 
 Usage:
@@ -212,6 +215,26 @@ def _discord_test(arg=None):
     notify.main()
 
 
+def _daytrade(arg=None):
+    import json
+    path = _REPO_ROOT / "config" / "daytrade.json"
+    cfg = json.loads(path.read_text())
+    if arg in ("on", "off"):
+        cfg["enabled"] = arg == "on"
+        path.write_text(json.dumps(cfg, indent=2) + "\n")
+    state = "ON" if cfg["enabled"] else "OFF"
+    print(f"Day-trade mode: {state}")
+    if cfg["enabled"]:
+        print("  Watch cycles now include the intraday radar embed.")
+        print("  The radar reports MEASURED candle stats — when the edge is a")
+        print("  coin flip it says so and gives you levels, not fairy tales.")
+
+
+def _intraday_show(arg=None):
+    from src.engines.analytics import intraday
+    intraday.main()
+
+
 def _system_run(arg=None):
     from src.engines.registry import print_board, run_full_system
     print_board(run_full_system(pull_data=(arg == "full")))
@@ -250,6 +273,10 @@ COMMANDS = {
     ("system", "run"): _system_run,
     ("watch", "run"): _watch_run,
     ("discord", "test"): _discord_test,
+    ("daytrade", "on"): lambda arg=None: _daytrade("on"),
+    ("daytrade", "off"): lambda arg=None: _daytrade("off"),
+    ("daytrade", "status"): lambda arg=None: _daytrade(None),
+    ("intraday", "show"): _intraday_show,
     ("system", "status"): _system_status,
 }
 

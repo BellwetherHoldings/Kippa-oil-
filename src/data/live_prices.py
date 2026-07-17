@@ -65,6 +65,32 @@ def fetch_live_wti(range_: str = "2y") -> pd.DataFrame:
     return df
 
 
+def fetch_intraday(interval: str = "30m", range_: str = "1mo") -> pd.DataFrame:
+    """CL=F intraday OHLCV bars. Columns: ts, open, high, low, close, volume.
+
+    The final bar is the in-progress candle and is dropped — engines must
+    only learn from completed candles.
+    """
+    resp = requests.get(
+        CHART_URL,
+        params={"range": range_, "interval": interval},
+        headers=HEADERS,
+        timeout=30,
+    )
+    resp.raise_for_status()
+    result = resp.json()["chart"]["result"][0]
+    quote = result["indicators"]["quote"][0]
+    df = pd.DataFrame({
+        "ts": pd.to_datetime(result["timestamp"], unit="s", utc=True),
+        "open": quote["open"], "high": quote["high"],
+        "low": quote["low"], "close": quote["close"],
+        "volume": quote["volume"],
+    }).dropna(subset=["open", "close"])
+    if len(df) < 2:
+        raise RuntimeError("Too few intraday bars returned.")
+    return df.iloc[:-1].reset_index(drop=True)   # drop the live partial bar
+
+
 def save_live_prices() -> pd.DataFrame:
     df = fetch_live_wti()
     DATA_DIR.mkdir(parents=True, exist_ok=True)

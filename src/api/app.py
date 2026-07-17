@@ -71,6 +71,7 @@ RESOURCES = {
     "cli": "cli_status",
     "apistatus": "api_status",
     "roadmap": "roadmap_status",
+    "intraday": "intraday_radar",
 }
 
 app = FastAPI(
