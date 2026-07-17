@@ -25,6 +25,8 @@ Governed by docs/016_CLI.md. Commands:
     oil deploy check       Release-readiness gate (audit + tests + env)
     oil api serve          Start the API on 127.0.0.1:8000
     oil system run [full]  Run every doc's engine (full = re-pull data first)
+    oil watch run [mins]   Continuous mode: cycle + Discord post every N min
+    oil discord test       Post the current read to Discord once
     oil system status      Last full-system board
 
 Usage:
@@ -200,6 +202,16 @@ def _api_serve(arg=None):
     uvicorn.run("src.api.app:app", host="127.0.0.1", port=8000)
 
 
+def _watch_run(arg=None):
+    from src.engines.automation import watch
+    watch.main([arg] if arg else [])
+
+
+def _discord_test(arg=None):
+    from src.engines.automation import notify
+    notify.main()
+
+
 def _system_run(arg=None):
     from src.engines.registry import print_board, run_full_system
     print_board(run_full_system(pull_data=(arg == "full")))
@@ -236,6 +248,8 @@ COMMANDS = {
     ("deploy", "check"): _deploy_check,
     ("api", "serve"): _api_serve,
     ("system", "run"): _system_run,
+    ("watch", "run"): _watch_run,
+    ("discord", "test"): _discord_test,
     ("system", "status"): _system_status,
 }
 

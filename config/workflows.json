@@ -29,6 +29,21 @@
         "signal_confidence",
         "monitoring"
       ]
+    },
+    "watch_cycle": {
+      "description": "Watch-mode cycle: refresh data + signal stack for the Discord feed. Skips slow validation engines (backtest/sim run on the daily and weekly cadences).",
+      "max_retries": 1,
+      "on_failure": "continue",
+      "steps": [
+        "data_pull",
+        "data_quality",
+        "inventory_surprise",
+        "composite_signal",
+        "risk_assessment",
+        "signal_confidence",
+        "strategy",
+        "monitoring"
+      ]
     }
   }
 }
