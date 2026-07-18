@@ -44,6 +44,21 @@ def run_cycle(cycle: int) -> None:
     from src.engines.automation.notify import send_discord_update
 
     started = datetime.now(timezone.utc)
+
+    # The intraday radar is meaningless when CL futures are dark (weekends,
+    # nightly maintenance halt) — prices are frozen at the last close. Skip
+    # the cycle: no Discord post, no wasted compute. A marker is still
+    # logged so the keepalive sees a fresh heartbeat and leaves us alone.
+    from src.data.market_hours import is_market_open, status
+    if not is_market_open(started):
+        st = status(started)
+        _log({"cycle": cycle, "at": started.isoformat(timespec="seconds"),
+              "market": "closed", "next_open": st.get("next_open")})
+        print(f"[{started:%H:%M:%S}] cycle {cycle}: market closed — "
+              f"skipping post (reopens {st.get('next_open')}, "
+              f"~{st.get('hours_to_open')}h)")
+        return
+
     summary = run_workflow("watch_cycle")
 
     # day-trade mode: refresh the intraday radar each cycle so the
