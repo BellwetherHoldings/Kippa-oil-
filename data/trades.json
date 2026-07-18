@@ -15,6 +15,7 @@
       "source": "what triggered it (e.g. discord_signal)",
       "notes": "free text"
     },
+    "accounts_note": "The 'accounts' array tracks equity per trader (deposit vs current balance). These are self-reported paper balances — leveraged futures returns, so account % far exceeds the underlying WTI move. Recorded as given; correct anytime.",
     "testing_plan": "Paper-trade the signal through 2026-08-31, then commit real capital if the record holds."
   },
   "account": {
@@ -22,6 +23,19 @@
     "testing_until": "2026-08-31",
     "note": "All trades below are paper while the signal is validated. Real capital after 2026-08-31 if the track record holds."
   },
+  "accounts": [
+    {
+      "id": "jakob-paper",
+      "owner": "Jakob",
+      "kind": "paper",
+      "broker": null,
+      "deposit": 20000,
+      "current_equity": 246000,
+      "as_of": "2026-07-18",
+      "week_return_pct": 0.20,
+      "note": "Trading the Discord signal (leveraged CL futures, paper). Balance self-reported and approximate ('~$246k'). Up ~20% this week per Jakob."
+    }
+  ],
   "trades": [
     {
       "id": "wti-core-long-01",

@@ -71,6 +71,25 @@ def test_aggregates_and_record(ledger):
     assert d["net_open_contracts"] == 2         # long 2, short 0 contracts
 
 
+def test_accounts_equity_math(tmp_path, monkeypatch):
+    book = {
+        "account": {"mode": "paper"},
+        "accounts": [
+            {"id": "j", "owner": "Jakob", "kind": "paper",
+             "deposit": 20000, "current_equity": 246000,
+             "week_return_pct": 0.20, "as_of": "2026-07-18"},
+        ],
+        "trades": [],
+    }
+    (tmp_path / "trades.json").write_text(json.dumps(book))
+    monkeypatch.setattr(pnl, "_latest_mark", lambda: (82.0, "2026-07-17"))
+    d = pnl.PnLEngine().run({"data_dir": tmp_path}).data
+    acct = d["accounts"][0]
+    assert acct["gain_usd"] == 226000.0
+    assert acct["total_return_pct"] == pytest.approx(11.3, abs=1e-3)  # +1130%
+    assert acct["multiple"] == 12.3
+
+
 def test_missing_ledger_fails_cleanly(tmp_path):
     result = pnl.PnLEngine().run({"data_dir": tmp_path})
     assert not result.ok

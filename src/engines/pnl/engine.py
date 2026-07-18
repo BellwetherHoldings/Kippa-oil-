@@ -85,6 +85,28 @@ class PnLEngine(Engine):
         if not isinstance(book.get("trades"), list):
             raise ValueError("trades.json must contain a 'trades' list")
 
+    def _accounts(self, book: dict[str, Any]) -> list[dict[str, Any]]:
+        """Per-trader equity summary from the ledger's 'accounts' block."""
+        out = []
+        for a in book.get("accounts", []):
+            dep = float(a.get("deposit") or 0)
+            eq = float(a.get("current_equity") or 0)
+            gain = eq - dep
+            out.append({
+                "id": a["id"],
+                "owner": a.get("owner", a["id"]),
+                "kind": a.get("kind", "paper"),
+                "deposit": round(dep, 2),
+                "current_equity": round(eq, 2),
+                "gain_usd": round(gain, 2),
+                "total_return_pct": round(gain / dep, 4) if dep else None,
+                "multiple": round(eq / dep, 2) if dep else None,
+                "week_return_pct": a.get("week_return_pct"),
+                "as_of": a.get("as_of"),
+                "note": a.get("note", ""),
+            })
+        return out
+
     def execute(self, inputs, warnings):
         data_dir = inputs.get("data_dir") or DATA_DIR
         book = json.loads((data_dir / LEDGER_NAME).read_text())
@@ -110,11 +132,14 @@ class PnLEngine(Engine):
         record = f"{len(wins)}-{len(losses)}"
         win_rate = (len(wins) / len(closed)) if closed else None
 
+        accounts = self._accounts(book)
+
         data = {
             "as_of_mark": mark,
             "mark_date": mark_date,
             "account_mode": book.get("account", {}).get("mode", "paper"),
             "testing_until": book.get("account", {}).get("testing_until"),
+            "accounts": accounts,
             "trades_total": len(rows),
             "open_count": len(openp),
             "closed_count": len(closed),
@@ -138,6 +163,12 @@ class PnLEngine(Engine):
             + (f" ({win_rate:.0%} win rate)." if win_rate is not None
                else " (no closed trades yet)."),
         ]
+        for a in accounts:
+            if a["total_return_pct"] is not None:
+                evidence.append(
+                    f"{a['owner']} ({a['kind']}): ${a['deposit']:,.0f} → "
+                    f"${a['current_equity']:,.0f} "
+                    f"({a['total_return_pct']:+.0%}, {a['multiple']}x).")
         for r in openp:
             evidence.append(
                 f"{r['id']} {r['side']} @ ${r['entry_price']:.2f} → "
@@ -168,6 +199,14 @@ def _fmt(data: dict[str, Any]) -> str:
     if data["realized_pnl_usd"] or data["open_pnl_usd"]:
         lines.append(f"  realized ${data['realized_pnl_usd']:+,.0f}  ·  "
                      f"open ${data['open_pnl_usd']:+,.0f}")
+    for a in data.get("accounts", []):
+        wk = (f", +{a['week_return_pct']:.0%} wk"
+              if a.get("week_return_pct") is not None else "")
+        ret = (f"{a['total_return_pct']:+.0%} ({a['multiple']}x)"
+               if a["total_return_pct"] is not None else "—")
+        lines.append(f"  account [{a['owner']}/{a['kind']}]: "
+                     f"${a['deposit']:,.0f} → ${a['current_equity']:,.0f}  "
+                     f"{ret}{wk}")
     lines.append("")
     for r in data["trades"]:
         tag = "OPEN " if r["status"] == "open" else "closed"
