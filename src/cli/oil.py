@@ -30,8 +30,12 @@ Governed by docs/016_CLI.md. Commands:
     oil daytrade on|off    Toggle day-trade mode (intraday radar in the
                            30-min Discord feed); 'status' to check
     oil intraday show      Run the 30m candle radar once
+    oil pnl show           Track record: open/closed trades marked to market
     oil model policy       Show which AI model each job uses, and why
     oil model for <job>    Print the model id for one job
+    oil discord test       Post the current read to Discord once
+    oil discord report <p> Upload a report file to Discord
+    oil reports index      Rebuild reports/INDEX.md (the archive catalogue)
     oil system status      Last full-system board
 
 Usage:
@@ -217,6 +221,24 @@ def _discord_test(arg=None):
     notify.main()
 
 
+def _discord_report(arg=None):
+    if not arg:
+        raise SystemExit("usage: oil discord report <path-to-report.md>")
+    from src.engines.automation.notify import send_discord_report
+    send_discord_report(arg)
+    print(f"✓ Uploaded {arg} to Discord.")
+
+
+def _pnl_show(arg=None):
+    from src.engines.pnl import engine
+    engine.main()
+
+
+def _reports_index(arg=None):
+    from src.engines.automation import reports_index
+    reports_index.main()
+
+
 def _daytrade(arg=None):
     import json
     path = _REPO_ROOT / "config" / "daytrade.json"
@@ -291,8 +313,11 @@ COMMANDS = {
     ("daytrade", "off"): lambda arg=None: _daytrade("off"),
     ("daytrade", "status"): lambda arg=None: _daytrade(None),
     ("intraday", "show"): _intraday_show,
+    ("pnl", "show"): _pnl_show,
     ("model", "policy"): _model_policy,
     ("model", "for"): _model_for,
+    ("discord", "report"): _discord_report,
+    ("reports", "index"): _reports_index,
     ("system", "status"): _system_status,
 }
 
@@ -313,6 +338,7 @@ JSON_ARTIFACTS = {
     ("strategy", "show"): "strategy_recommendation",
     ("monitor", "status"): "monitoring_report",
     ("data", "quality"): "data_quality_report",
+    ("pnl", "show"): "pnl_summary",
 }
 
 

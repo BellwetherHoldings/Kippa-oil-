@@ -206,6 +206,14 @@ def run_full_system(pull_data: bool = False) -> dict[str, Any]:
             raise RuntimeError(f"inventory surprise failed: {surprise.error}")
         print()
 
+    # Refresh the live P&L track record against the latest mark. Not one of
+    # the 22 docs, so it stays off the board; failure is non-fatal.
+    try:
+        from src.engines.pnl.engine import PnLEngine
+        PnLEngine().run()
+    except Exception:                       # pragma: no cover - defensive
+        pass
+
     by_doc = {e["doc"]: e for e in REGISTRY}
     board: list[dict[str, Any]] = []
     # floor to seconds: artifact timestamps are second-precision, so a

@@ -62,3 +62,6 @@ models/
 
 # Engine outputs (regenerated each run)
 data/*.json
+# ...except the trade ledger: source-of-truth P&L data, not regenerable.
+# (Holds no secrets — positions and prices only.)
+!data/trades.json

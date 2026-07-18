@@ -1,0 +1,41 @@
+{
+  "_schema": {
+    "description": "Live trade ledger for the Kippa signal track record. Every position taken off the Discord signal is recorded here so performance is measured, not remembered (Project Vision: every output has supporting evidence; historical information is preserved). The PnL engine (src/engines/pnl/engine.py) marks open trades to the platform's WTI feed and computes the running record. This file is NOT secret — it is committed. It holds no account numbers or credentials.",
+    "fields": {
+      "id": "unique trade id",
+      "instrument": "CL = NYMEX WTI crude",
+      "side": "long | short (short = hedge)",
+      "entry_price": "fill price in $/bbl",
+      "entry_date": "YYYY-MM-DD",
+      "contracts": "number of CL contracts (1 contract = 1000 bbl); null if tracking in $/bbl and % only",
+      "status": "open | closed",
+      "exit_price": "$/bbl fill on close; null while open",
+      "exit_date": "YYYY-MM-DD; null while open",
+      "kind": "paper | real",
+      "source": "what triggered it (e.g. discord_signal)",
+      "notes": "free text"
+    },
+    "testing_plan": "Paper-trade the signal through 2026-08-31, then commit real capital if the record holds."
+  },
+  "account": {
+    "mode": "paper",
+    "testing_until": "2026-08-31",
+    "note": "All trades below are paper while the signal is validated. Real capital after 2026-08-31 if the track record holds."
+  },
+  "trades": [
+    {
+      "id": "wti-core-long-01",
+      "instrument": "CL",
+      "side": "long",
+      "entry_price": 79.50,
+      "entry_date": "2026-07-15",
+      "contracts": null,
+      "status": "open",
+      "exit_price": null,
+      "exit_date": null,
+      "kind": "paper",
+      "source": "discord_signal",
+      "notes": "Core long, entered after the ~12% move off the Hormuz escalation. Holding per signal (composite bullish, no invalidation trigger). Entry date approximate — adjust if needed. Hedges tracked as separate short entries."
+    }
+  ]
+}

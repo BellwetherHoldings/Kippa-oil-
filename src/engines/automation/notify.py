@@ -153,6 +153,45 @@ def build_daytrade_embed() -> dict[str, Any] | None:
     }
 
 
+def build_pnl_embed() -> dict[str, Any] | None:
+    """Track-record embed from the published pnl_summary artifact."""
+    pnl = load_artifact("pnl_summary", require_success=True)
+    if pnl is None:
+        return None
+    d = pnl["data"]
+    rec = d["record_closed"]
+    wr = (f" ({d['win_rate_closed']:.0%})"
+          if d.get("win_rate_closed") is not None else "")
+    lines = []
+    for r in d["trades"]:
+        if r["status"] != "open":
+            continue
+        usd = f" (${r['pnl_usd']:+,.0f})" if r["pnl_usd"] is not None else ""
+        lines.append(f"{r['side'].upper()} @ ${r['entry_price']:.2f} → "
+                     f"${r['mark_or_exit']:.2f}  **{r['pnl_pct']:+.2%}**{usd}")
+    fields = [
+        {"name": "Record (closed)", "value": f"{rec}{wr}", "inline": True},
+        {"name": "Open",
+         "value": f"{d['open_count']} ({d['open_winners']} green / "
+                  f"{d['open_losers']} red)", "inline": True},
+        {"name": "Mark",
+         "value": f"${d['as_of_mark']:.2f} ({d['mark_date']})", "inline": True},
+    ]
+    if lines:
+        fields.append({"name": "Open positions",
+                       "value": "\n".join(lines), "inline": False})
+    return {
+        "title": f"Track Record — {d['account_mode'].upper()}"
+                 + (f" · testing to {d['testing_until']}"
+                    if d.get("testing_until") else ""),
+        "color": 0x2ECC71 if d["open_losers"] == 0 else 0xE67E22,
+        "fields": fields,
+        "footer": {"text": "Paper track record · marks to the platform WTI "
+                           "feed · not financial advice"},
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
 def send_discord_update(content: str | None = None) -> bool:
     """Post the current market read. Returns True on success."""
     url = os.getenv("DISCORD_WEBHOOK_URL", "").strip()
@@ -168,6 +207,9 @@ def send_discord_update(content: str | None = None) -> bool:
         dt = build_daytrade_embed()
         if dt:
             embeds.append(dt)
+    pnl = build_pnl_embed()
+    if pnl:
+        embeds.append(pnl)
     payload: dict[str, Any] = {"embeds": embeds,
                                "username": "Kippa Oil Intelligence"}
     if content:
@@ -181,6 +223,41 @@ def send_discord_update(content: str | None = None) -> bool:
         raise RuntimeError(
             f"Discord webhook post failed (status: {status})."
         ) from None  # never propagate the URL-bearing exception
+    return True
+
+
+def send_discord_report(report_path: str | Path,
+                        content: str | None = None) -> bool:
+    """Upload a report file (markdown) to Discord as an attachment.
+
+    Used to push the daily / weekly / weekend reports in full, since they
+    are far larger than an embed's field limits. Returns True on success.
+    """
+    import json as _json
+
+    url = os.getenv("DISCORD_WEBHOOK_URL", "").strip()
+    if not url:
+        raise RuntimeError("DISCORD_WEBHOOK_URL not set in .env.")
+    path = Path(report_path)
+    if not path.exists():
+        raise FileNotFoundError(f"report not found: {path}")
+
+    payload = {"username": "Kippa Oil Intelligence",
+               "content": content or f"📄 {path.name}"}
+    try:
+        with path.open("rb") as fh:
+            resp = requests.post(
+                url,
+                data={"payload_json": _json.dumps(payload)},
+                files={"files[0]": (path.name, fh, "text/markdown")},
+                timeout=30,
+            )
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        status = getattr(exc.response, "status_code", "n/a")
+        raise RuntimeError(
+            f"Discord report upload failed (status: {status})."
+        ) from None
     return True
 
 
