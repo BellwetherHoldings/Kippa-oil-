@@ -33,18 +33,20 @@
       "current_equity": 246000,
       "as_of": "2026-07-18",
       "week_return_pct": 0.20,
-      "note": "Self-reported verbally ('~$246k'). NOT yet reconciled with the FundedE9x screenshots, which show a separate ~$100k account. Confirm which account this is."
+      "verified": false,
+      "note": "Self-reported verbally ('~$246k'). No trade records to back it and it conflicts with the FundedE9x screenshots (~$100k). Held OUT of the Discord track record until reconciled."
     },
     {
       "id": "fundede9x-100k",
-      "owner": "unconfirmed",
+      "owner": "Jakob",
       "kind": "paper",
       "broker": "FundedE9x",
       "deposit": null,
       "current_equity": 99901.01,
       "as_of": "2026-07-17",
       "week_return_pct": null,
-      "note": "From FundedE9x close-alert screenshots. Latest balance $99,901.01 (2026-07-17 13:03). Starting/deposit balance TBD (looks like a $100k eval). Balance chain shows a gap of ~-$2,333 between 2026-07-14 15:45 and 2026-07-15 08:07 — trades in that window were not in the screenshots, so the trade list below is incomplete."
+      "verified": true,
+      "note": "From FundedE9x close-alert screenshots — all WTI crude oil (CL1! futures + USOIL spot, both WTI). Latest balance $99,901.01 (2026-07-17 13:03). Starting/deposit TBD (looks like a $100k eval). Balance chain shows a gap of ~-$2,333 between 2026-07-14 15:45 and 2026-07-15 08:07 — trades in that window were not in the screenshots, so the closed-trade list is incomplete."
     }
   ],
   "trades": [

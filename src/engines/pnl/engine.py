@@ -125,6 +125,7 @@ class PnLEngine(Engine):
                 "id": a["id"],
                 "owner": a.get("owner", a["id"]),
                 "kind": a.get("kind", "paper"),
+                "broker": a.get("broker"),
                 "deposit": round(dep, 2),
                 "current_equity": round(eq, 2),
                 "gain_usd": round(gain, 2),
@@ -132,6 +133,7 @@ class PnLEngine(Engine):
                 "multiple": round(eq / dep, 2) if dep else None,
                 "week_return_pct": a.get("week_return_pct"),
                 "as_of": a.get("as_of"),
+                "verified": a.get("verified", True),
                 "note": a.get("note", ""),
             })
         return out

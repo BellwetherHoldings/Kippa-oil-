@@ -234,6 +234,14 @@ def _pnl_show(arg=None):
     engine.main()
 
 
+def _discord_pnl(arg=None):
+    from src.engines.pnl.engine import PnLEngine
+    PnLEngine().run()                     # refresh the artifact first
+    from src.engines.automation.notify import send_discord_pnl
+    send_discord_pnl(content=arg or "📈 **Track record** (paper, off the signal)")
+    print("✓ Pushed the track record to Discord.")
+
+
 def _reports_index(arg=None):
     from src.engines.automation import reports_index
     reports_index.main()
@@ -317,6 +325,7 @@ COMMANDS = {
     ("model", "policy"): _model_policy,
     ("model", "for"): _model_for,
     ("discord", "report"): _discord_report,
+    ("discord", "pnl"): _discord_pnl,
     ("reports", "index"): _reports_index,
     ("system", "status"): _system_status,
 }

@@ -182,14 +182,19 @@ def build_pnl_embed() -> dict[str, Any] | None:
                        "value": "\n".join(lines), "inline": False})
     acct_lines = []
     for a in d.get("accounts", []):
+        if a.get("verified") is False:        # never publish unverified claims
+            continue
         ret = (f"{a['total_return_pct']:+.0%} ({a['multiple']}x)"
                if a.get("total_return_pct") is not None else "")
         wk = (f" · +{a['week_return_pct']:.0%} wk"
               if a.get("week_return_pct") is not None else "")
         acct_lines.append(f"**{a['owner']}**: ${a['deposit']:,.0f} → "
-                          f"${a['current_equity']:,.0f}  {ret}{wk}")
+                          f"${a['current_equity']:,.0f}  {ret}{wk}"
+                          if a.get("deposit") else
+                          f"**{a['owner']}**: ${a['current_equity']:,.0f} "
+                          f"({a['broker'] or 'paper'})")
     if acct_lines:
-        fields.append({"name": "Account equity (paper, self-reported)",
+        fields.append({"name": "Account equity (paper)",
                        "value": "\n".join(acct_lines), "inline": False})
     return {
         "title": f"Track Record — {d['account_mode'].upper()}"
@@ -234,6 +239,29 @@ def send_discord_update(content: str | None = None) -> bool:
         raise RuntimeError(
             f"Discord webhook post failed (status: {status})."
         ) from None  # never propagate the URL-bearing exception
+    return True
+
+
+def send_discord_pnl(content: str | None = None) -> bool:
+    """Post ONLY the track-record embed (no market read). Returns True."""
+    url = os.getenv("DISCORD_WEBHOOK_URL", "").strip()
+    if not url:
+        raise RuntimeError("DISCORD_WEBHOOK_URL not set in .env.")
+    embed = build_pnl_embed()
+    if embed is None:
+        raise RuntimeError("No pnl_summary artifact — run `oil pnl show` first.")
+    payload: dict[str, Any] = {"embeds": [embed],
+                               "username": "Kippa Oil Intelligence"}
+    if content:
+        payload["content"] = content
+    try:
+        resp = requests.post(url, json=payload, timeout=15)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        status = getattr(exc.response, "status_code", "n/a")
+        raise RuntimeError(
+            f"Discord track-record post failed (status: {status})."
+        ) from None
     return True
 
 
