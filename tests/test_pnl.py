@@ -90,6 +90,41 @@ def test_accounts_equity_math(tmp_path, monkeypatch):
     assert acct["multiple"] == 12.3
 
 
+def test_imported_closed_trades_use_broker_pnl_and_units(tmp_path, monkeypatch):
+    book = {
+        "account": {"mode": "paper"},
+        "trades": [
+            {"id": "usoil-win", "instrument": "USOIL", "side": "long",
+             "entry_price": 79.28, "exit_price": 79.97, "units": 2400,
+             "point_value": 1.0, "realized_pnl_usd": 1656.0,
+             "status": "closed", "kind": "paper", "source": "discord_signal"},
+            {"id": "cl-loss", "instrument": "CL", "side": "long",
+             "entry_price": 79.18, "exit_price": 78.96, "units": 1,
+             "point_value": 1000.0, "realized_pnl_usd": -220.0,
+             "status": "closed", "kind": "paper", "source": "discord_signal"},
+            {"id": "pnl-only", "instrument": "USOIL", "side": "long",
+             "entry_price": None, "exit_price": None, "units": None,
+             "point_value": None, "realized_pnl_usd": -22.2,
+             "status": "closed", "kind": "paper", "source": "discord_signal"},
+        ],
+    }
+    (tmp_path / "trades.json").write_text(json.dumps(book))
+    monkeypatch.setattr(pnl, "_latest_mark", lambda: (82.0, "2026-07-17"))
+    d = pnl.PnLEngine().run({"data_dir": tmp_path}).data
+    rows = {r["id"]: r for r in d["trades"]}
+    # broker realized P&L is used verbatim, not recomputed
+    assert rows["usoil-win"]["pnl_usd"] == 1656.0
+    assert rows["cl-loss"]["pnl_usd"] == -220.0
+    assert rows["cl-loss"]["winner"] is False
+    # a P&L-only trade with no prices still counts, as a loss
+    assert rows["pnl-only"]["pnl_usd"] == -22.2
+    assert rows["pnl-only"]["entry_price"] is None
+    assert rows["pnl-only"]["winner"] is False
+    # 1 win, 2 losses
+    assert d["record_closed"] == "1-2"
+    assert d["realized_pnl_usd"] == pytest.approx(1413.8, abs=1e-2)
+
+
 def test_missing_ledger_fails_cleanly(tmp_path):
     result = pnl.PnLEngine().run({"data_dir": tmp_path})
     assert not result.ok

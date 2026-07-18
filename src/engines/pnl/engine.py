@@ -45,29 +45,58 @@ def _latest_mark() -> tuple[float, str]:
 
 
 def _trade_pnl(trade: dict[str, Any], mark: float) -> dict[str, Any]:
-    """Compute one trade's P&L versus the mark (or its own exit if closed)."""
+    """Compute one trade's P&L versus the mark (or its own exit if closed).
+
+    Dollar P&L, in priority order: an explicit broker-reported
+    realized_pnl_usd (closed trades imported from alerts); else
+    units x point_value x price move; else CL contracts x 1000 bbl x move.
+    Entry/exit prices may be absent on an imported trade that carries only
+    its realized P&L — the price-derived fields then report null.
+    """
     side = trade["side"]
     direction = 1.0 if side == "long" else -1.0
-    entry = float(trade["entry_price"])
     closed = trade["status"] == "closed"
-    ref = float(trade["exit_price"]) if closed else mark
+    entry = trade.get("entry_price")
+    entry = float(entry) if entry is not None else None
+    if closed:
+        ex = trade.get("exit_price")
+        ref = float(ex) if ex is not None else None
+    else:
+        ref = mark
 
-    per_bbl = (ref - entry) * direction
-    pct = per_bbl / entry
+    if entry is not None and ref is not None:
+        per_bbl = (ref - entry) * direction
+        pct = per_bbl / entry
+    else:
+        per_bbl = pct = None
+
+    realized = trade.get("realized_pnl_usd")
+    units, pv = trade.get("units"), trade.get("point_value")
     contracts = trade.get("contracts")
-    dollars = (per_bbl * contracts * CONTRACT_BBL) if contracts else None
+    if closed and realized is not None:
+        dollars = float(realized)
+    elif per_bbl is not None and units is not None and pv is not None:
+        dollars = per_bbl * float(units) * float(pv)
+    elif per_bbl is not None and contracts:
+        dollars = per_bbl * contracts * CONTRACT_BBL
+    else:
+        dollars = None
+
+    winner = (dollars > 0) if dollars is not None else (
+        per_bbl > 0 if per_bbl is not None else False)
 
     return {
         "id": trade["id"],
         "side": side,
         "kind": trade.get("kind", "paper"),
         "status": trade["status"],
-        "entry_price": round(entry, 2),
-        "mark_or_exit": round(ref, 2),
-        "pnl_per_bbl": round(per_bbl, 2),
-        "pnl_pct": round(pct, 4),
+        "account": trade.get("account"),
+        "entry_price": round(entry, 2) if entry is not None else None,
+        "mark_or_exit": round(ref, 2) if ref is not None else None,
+        "pnl_per_bbl": round(per_bbl, 2) if per_bbl is not None else None,
+        "pnl_pct": round(pct, 4) if pct is not None else None,
         "pnl_usd": round(dollars, 2) if dollars is not None else None,
-        "winner": per_bbl > 0,
+        "winner": winner,
         "notes": trade.get("notes", ""),
     }
 
@@ -152,8 +181,8 @@ class PnLEngine(Engine):
             "open_pnl_usd": round(open_usd, 2),
             "net_open_contracts": net_contracts,
             "avg_open_pnl_pct": round(
-                sum(r["pnl_pct"] for r in openp) / len(openp), 4)
-            if openp else None,
+                sum(r["pnl_pct"] for r in openp if r["pnl_pct"] is not None)
+                / len(openp), 4) if openp else None,
             "trades": rows,
         }
 
@@ -211,10 +240,12 @@ def _fmt(data: dict[str, Any]) -> str:
     for r in data["trades"]:
         tag = "OPEN " if r["status"] == "open" else "closed"
         usd = f"  ${r['pnl_usd']:+,.0f}" if r["pnl_usd"] is not None else ""
-        lines.append(
-            f"  [{tag}] {r['side']:<5} @ ${r['entry_price']:.2f} → "
-            f"${r['mark_or_exit']:.2f}   {r['pnl_pct']:+.2%}"
-            f"  ({r['pnl_per_bbl']:+.2f}/bbl){usd}")
+        if r["entry_price"] is not None and r["mark_or_exit"] is not None:
+            px = f"@ ${r['entry_price']:.2f} → ${r['mark_or_exit']:.2f}"
+        else:
+            px = "(prices n/a)"
+        pct = f"{r['pnl_pct']:+.2%}" if r["pnl_pct"] is not None else "   —  "
+        lines.append(f"  [{tag}] {r['side']:<5} {px}   {pct}{usd}")
     return "\n".join(lines)
 
 

@@ -33,7 +33,18 @@
       "current_equity": 246000,
       "as_of": "2026-07-18",
       "week_return_pct": 0.20,
-      "note": "Trading the Discord signal (leveraged CL futures, paper). Balance self-reported and approximate ('~$246k'). Up ~20% this week per Jakob."
+      "note": "Self-reported verbally ('~$246k'). NOT yet reconciled with the FundedE9x screenshots, which show a separate ~$100k account. Confirm which account this is."
+    },
+    {
+      "id": "fundede9x-100k",
+      "owner": "unconfirmed",
+      "kind": "paper",
+      "broker": "FundedE9x",
+      "deposit": null,
+      "current_equity": 99901.01,
+      "as_of": "2026-07-17",
+      "week_return_pct": null,
+      "note": "From FundedE9x close-alert screenshots. Latest balance $99,901.01 (2026-07-17 13:03). Starting/deposit balance TBD (looks like a $100k eval). Balance chain shows a gap of ~-$2,333 between 2026-07-14 15:45 and 2026-07-15 08:07 — trades in that window were not in the screenshots, so the trade list below is incomplete."
     }
   ],
   "trades": [
@@ -50,6 +61,79 @@
       "kind": "paper",
       "source": "discord_signal",
       "notes": "Core long, entered after the ~12% move off the Hormuz escalation. Holding per signal (composite bullish, no invalidation trigger). Entry date approximate — adjust if needed. Hedges tracked as separate short entries."
+    },
+
+    {
+      "id": "e9x-2026-07-14-1545", "instrument": "USOIL", "side": "long",
+      "entry_price": 79.28, "entry_date": "2026-07-14",
+      "exit_price": 79.97, "exit_date": "2026-07-14",
+      "units": 2400, "point_value": 1.0, "realized_pnl_usd": 1656.00,
+      "status": "closed", "kind": "paper", "account": "fundede9x-100k",
+      "source": "discord_signal", "notes": "FundedE9x close alert. Open time unknown."
+    },
+    {
+      "id": "e9x-2026-07-15-0807", "instrument": "USOIL", "side": "long",
+      "entry_price": 79.72, "entry_date": "2026-07-15",
+      "exit_price": 79.99, "exit_date": "2026-07-15",
+      "units": 3000, "point_value": 1.0, "realized_pnl_usd": 810.00,
+      "status": "closed", "kind": "paper", "account": "fundede9x-100k",
+      "source": "discord_signal", "notes": "FundedE9x close alert."
+    },
+    {
+      "id": "e9x-2026-07-15-0811", "instrument": "USOIL", "side": "long",
+      "entry_price": 79.98, "entry_date": "2026-07-15",
+      "exit_price": 80.08, "exit_date": "2026-07-15",
+      "units": 3000, "point_value": 1.0, "realized_pnl_usd": 300.00,
+      "status": "closed", "kind": "paper", "account": "fundede9x-100k",
+      "source": "discord_signal", "notes": "FundedE9x close alert."
+    },
+    {
+      "id": "e9x-2026-07-15-1415", "instrument": "USOIL", "side": "long",
+      "entry_price": 78.64, "entry_date": "2026-07-15",
+      "exit_price": 79.63, "exit_date": "2026-07-15",
+      "units": 3000, "point_value": 1.0, "realized_pnl_usd": 2970.00,
+      "status": "closed", "kind": "paper", "account": "fundede9x-100k",
+      "source": "discord_signal", "notes": "FundedE9x close alert."
+    },
+    {
+      "id": "e9x-2026-07-15-1434", "instrument": "USOIL", "side": "long",
+      "entry_price": 79.67, "entry_date": "2026-07-15",
+      "exit_price": 80.46, "exit_date": "2026-07-15",
+      "units": 2000, "point_value": 1.0, "realized_pnl_usd": 1580.00,
+      "status": "closed", "kind": "paper", "account": "fundede9x-100k",
+      "source": "discord_signal", "notes": "FundedE9x close alert."
+    },
+    {
+      "id": "e9x-2026-07-16-0725", "instrument": "USOIL", "side": "long",
+      "entry_price": 80.35, "entry_date": "2026-07-16",
+      "exit_price": 80.72, "exit_date": "2026-07-16",
+      "units": 2000, "point_value": 1.0, "realized_pnl_usd": 740.00,
+      "status": "closed", "kind": "paper", "account": "fundede9x-100k",
+      "source": "discord_signal", "notes": "FundedE9x close alert."
+    },
+    {
+      "id": "e9x-2026-07-16-1155", "instrument": "USOIL", "side": "long",
+      "entry_price": null, "entry_date": "2026-07-16",
+      "exit_price": null, "exit_date": "2026-07-16",
+      "units": null, "point_value": null, "realized_pnl_usd": -22.20,
+      "status": "closed", "kind": "paper", "account": "fundede9x-100k",
+      "source": "discord_signal", "notes": "FundedE9x close alert — small LOSS. Prices/size not captured in the screenshot; only realized P&L known."
+    },
+    {
+      "id": "e9x-2026-07-16-2131", "instrument": "CL", "side": "long",
+      "entry_price": 79.18, "entry_date": "2026-07-16",
+      "exit_price": 78.96, "exit_date": "2026-07-16",
+      "units": 1, "point_value": 1000.0, "realized_pnl_usd": -220.00,
+      "status": "closed", "kind": "paper", "account": "fundede9x-100k",
+      "source": "discord_signal", "notes": "FundedE9x close alert — LOSS. NYMEX:CL1! 1 contract, closed below avg."
+    },
+    {
+      "id": "e9x-2026-07-17-1303", "instrument": "CL", "side": "long",
+      "entry_price": 80.77, "entry_date": "2026-07-17",
+      "exit_price": 81.65, "exit_date": "2026-07-17",
+      "units": 1, "point_value": 1000.0, "realized_pnl_usd": 880.00,
+      "status": "closed", "kind": "paper", "account": "fundede9x-100k",
+      "source": "discord_signal", "notes": "FundedE9x close alert. NYMEX:CL1! 1 contract."
     }
   ]
 }
