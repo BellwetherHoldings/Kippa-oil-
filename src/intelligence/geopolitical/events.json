@@ -23,9 +23,9 @@
         "Qatar"
       ],
       "chokepoint": "strait_of_hormuz",
-      "description": "Iran closed the Strait of Hormuz 2026-02-28; re-closed 2026-07-13. As of 07-17: CENTCOM ran a seven-hour strike wave against dozens of Iranian military assets near the strait and along the coastline; the US naval blockade of Iranian ports stands. Transits collapsed to ~6 vessels/day vs 18-22 earlier this month. ~25% of seaborne oil trade transits this chokepoint.",
+      "description": "Iran closed the Strait of Hormuz 2026-02-28; re-closed 2026-07-13. As of 07-19: third consecutive day of US-Iran fighting. Trump said he would reimpose the US naval blockade on Iranian ships only and demanded other transiting ships pay the US 20% of cargo value as protection; Iran is demanding all ships use a northern route through its territorial waters and continues attacking ships in the US-protected Oman-hugging lane. Transit refinement vs the 07-17 note: 57 transits were recorded Fri-Sun (>50% wk/wk drop, vs ~130/day pre-war), and DOE says 8.5M bbl still transited Sunday with military assistance (total Gulf flows ~15M bpd) — heavily disrupted but not zero. ~25% of seaborne oil trade transits this chokepoint.",
       "start_date": "2026-02-28",
-      "last_update": "2026-07-17",
+      "last_update": "2026-07-19",
       "status": "active",
       "severity": 10,
       "oil_supply_impact": 10,
@@ -41,7 +41,9 @@
         "https://www.cnbc.com/2026/07/15/oil-prices-today-brent-wti-hormuz-blockade.html",
         "https://www.cnn.com/2026/07/11/world/live-news/iran-war-trump",
         "https://www.nbcnews.com/business/markets/oil-prices-strait-hormuz-chip-stocks-rcna353328",
-        "https://www.pbs.org/newshour/show/what-may-happen-as-oil-supplies-dwindle-and-strait-of-hormuz-remains-mostly-closed"
+        "https://www.pbs.org/newshour/show/what-may-happen-as-oil-supplies-dwindle-and-strait-of-hormuz-remains-mostly-closed",
+        "https://www.cnbc.com/2026/07/13/ship-traffic-through-hormuz-falls-as-us-and-iran-fight-for-control.html",
+        "https://www.aljazeera.com/economy/2026/7/10/strait-of-hormuz-shipping-grinds-to-halt-as-us-iran-resume-fighting"
       ]
     },
     {
