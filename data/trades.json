@@ -34,19 +34,19 @@
       "as_of": "2026-07-19",
       "week_return_pct": null,
       "verified": true,
-      "note": "Jakob's TradingView paper account (dq8k7jyx22). Balance $136,100 as of 2026-07-19 17:20 (screenshot). Deposit $100k assumed \u2014 screenshot's top-line 'Realized PnL +$136,100' ~ balance, so confirm the true starting deposit. Now trade-verified."
+      "note": "Jakob's TradingView paper account (dq8k7jyx22). $100k start (confirmed). Balance $136,100 as of 2026-07-19. Trade-verified."
     },
     {
-      "id": "partner-70k",
-      "owner": "Partner",
+      "id": "titus-90k",
+      "owner": "Titus",
       "kind": "paper",
       "broker": "FundedE9x",
-      "deposit": 70000,
+      "deposit": 90000,
       "current_equity": 99901.01,
       "as_of": "2026-07-17",
       "week_return_pct": null,
       "verified": true,
-      "note": "Jakob's partner's paper account: $70k start, trading the same Discord signal. The FundedE9x close-alert screenshots (all WTI crude \u2014 CL1! futures + USOIL spot) are this account; latest balance $99,901.01 (2026-07-17). Confirm the partner's name to label it. Visible closed trades are a partial slice (balance chain has a gap on 2026-07-15), so the full record has more trades than listed."
+      "note": "Titus's paper account (FundedE9x): $90k start, trading the same Discord signal; latest balance $99,901.01 (2026-07-17). Visible closed trades are a partial slice (balance chain has a gap on 2026-07-15), so the full record has more trades than listed."
     }
   ],
   "trades": [
@@ -78,7 +78,7 @@
       "realized_pnl_usd": 1656.0,
       "status": "closed",
       "kind": "paper",
-      "account": "partner-70k",
+      "account": "titus-90k",
       "source": "discord_signal",
       "notes": "FundedE9x close alert. Open time unknown."
     },
@@ -95,7 +95,7 @@
       "realized_pnl_usd": 810.0,
       "status": "closed",
       "kind": "paper",
-      "account": "partner-70k",
+      "account": "titus-90k",
       "source": "discord_signal",
       "notes": "FundedE9x close alert."
     },
@@ -112,7 +112,7 @@
       "realized_pnl_usd": 300.0,
       "status": "closed",
       "kind": "paper",
-      "account": "partner-70k",
+      "account": "titus-90k",
       "source": "discord_signal",
       "notes": "FundedE9x close alert."
     },
@@ -129,7 +129,7 @@
       "realized_pnl_usd": 2970.0,
       "status": "closed",
       "kind": "paper",
-      "account": "partner-70k",
+      "account": "titus-90k",
       "source": "discord_signal",
       "notes": "FundedE9x close alert."
     },
@@ -146,7 +146,7 @@
       "realized_pnl_usd": 1580.0,
       "status": "closed",
       "kind": "paper",
-      "account": "partner-70k",
+      "account": "titus-90k",
       "source": "discord_signal",
       "notes": "FundedE9x close alert."
     },
@@ -163,7 +163,7 @@
       "realized_pnl_usd": 740.0,
       "status": "closed",
       "kind": "paper",
-      "account": "partner-70k",
+      "account": "titus-90k",
       "source": "discord_signal",
       "notes": "FundedE9x close alert."
     },
@@ -180,7 +180,7 @@
       "realized_pnl_usd": -22.2,
       "status": "closed",
       "kind": "paper",
-      "account": "partner-70k",
+      "account": "titus-90k",
       "source": "discord_signal",
       "notes": "FundedE9x close alert \u2014 small LOSS. Prices/size not captured in the screenshot; only realized P&L known."
     },
@@ -197,7 +197,7 @@
       "realized_pnl_usd": -220.0,
       "status": "closed",
       "kind": "paper",
-      "account": "partner-70k",
+      "account": "titus-90k",
       "source": "discord_signal",
       "notes": "FundedE9x close alert \u2014 LOSS. NYMEX:CL1! 1 contract, closed below avg."
     },
@@ -214,7 +214,7 @@
       "realized_pnl_usd": 880.0,
       "status": "closed",
       "kind": "paper",
-      "account": "partner-70k",
+      "account": "titus-90k",
       "source": "discord_signal",
       "notes": "FundedE9x close alert. NYMEX:CL1! 1 contract."
     },
