@@ -30,11 +30,11 @@
       "kind": "paper",
       "broker": null,
       "deposit": 100000,
-      "current_equity": 115000,
-      "as_of": "2026-07-18",
+      "current_equity": 136100.0,
+      "as_of": "2026-07-19",
       "week_return_pct": null,
-      "verified": false,
-      "note": "Jakob's paper account: $100k, up ~$15k (self-reported; corrects the earlier '$246k', which was a mix-up). No trade screenshots yet \u2014 send them and this flips to trade-verified. The open core long below is on this account."
+      "verified": true,
+      "note": "Jakob's TradingView paper account (dq8k7jyx22). Balance $136,100 as of 2026-07-19 17:20 (screenshot). Deposit $100k assumed \u2014 screenshot's top-line 'Realized PnL +$136,100' ~ balance, so confirm the true starting deposit. Now trade-verified."
     },
     {
       "id": "partner-70k",
@@ -217,6 +217,23 @@
       "account": "partner-70k",
       "source": "discord_signal",
       "notes": "FundedE9x close alert. NYMEX:CL1! 1 contract."
+    },
+    {
+      "id": "jakob-2026-07-19-1720",
+      "instrument": "CL",
+      "side": "long",
+      "entry_price": 81.38,
+      "entry_date": "2026-07-19",
+      "exit_price": 84.09,
+      "exit_date": "2026-07-19",
+      "units": 10,
+      "point_value": 1000.0,
+      "realized_pnl_usd": 27100.0,
+      "status": "closed",
+      "kind": "paper",
+      "account": "jakob-100k",
+      "source": "discord_signal",
+      "notes": "TradingView paper (dq8k7jyx22). Closed long CL1! 10 units @ 84.09, avg 81.38, on the Sunday 6 PM ET reopen gap-up. Balance 109,000 -> 136,100."
     }
   ]
 }

@@ -108,25 +108,33 @@ def build_embed() -> dict[str, Any]:
 
 
 def build_daytrade_embed() -> dict[str, Any] | None:
-    """Compact Day-Trade Radar embed; None if no radar artifact."""
+    """Compact Day-Trade Radar embed; None if no radar artifact.
+
+    Leads with the actionable with-trend stance and the trade plans. The
+    (honestly unpredictable) next-candle direction is a small footer note,
+    not the headline — so the radar guides trades instead of scaring you
+    off good with-trend setups.
+    """
     radar = load_artifact("intraday_radar", require_success=True)
     if radar is None:
         return None
     d = radar["data"]
-    nc, ev, lv = d["next_candle"], d["edge_verdict"], d["levels"]
-    lean_txt = ("no lean — levels only" if nc["lean"] == "none" else
-                f"{nc['lean'].upper()}  P(up) {nc['p_up']:.0%} "
-                f"(n={nc['state_sample']})")
-    edge_txt = (f"hit rate {ev['in_sample_hit_rate']:.0%} over "
-                f"{ev['predictions_scored']} predictions — "
-                + ("edge measurable" if ev["edge"] == "measurable"
-                   else "coin flip; don't trade the lean"))
+    lv = d["levels"]
+    stance = d.get("day_trade_stance", "—")
+    plans = "\n".join(
+        f"**{t['name']}** [{t['side'].upper()}] "
+        f"E {t['entry']} / S {t['stop']} / T {t['target']} "
+        f"(R:R {t['risk_reward']})"
+        for t in d["trade_plans"])
+    # green for a directional (LONG/SHORT) stance, amber for range days
+    color = 0x2ECC71 if "LONG" in stance else \
+            0xE74C3C if "SHORT" in stance else 0xF1C40F
     return {
-        "title": "Day-Trade Radar — CL=F 30m",
-        "color": 0xF1C40F,
+        "title": f"Day-Trade Radar — CL=F 30m · {stance}",
+        "color": color,
         "fields": [
-            {"name": "Next candle",
-             "value": f"{lean_txt}\n_{edge_txt}_", "inline": False},
+            {"name": f"▶ Plan of attack ({d['daily_bias']} bias)",
+             "value": plans, "inline": False},
             {"name": "Levels",
              "value": f"px **{lv['last_price']}** | VWAP {lv['session_vwap']} "
                       f"({lv['vs_vwap']:+}) \nH {lv['session_high']} / "
@@ -138,17 +146,10 @@ def build_daytrade_embed() -> dict[str, Any] | None:
                       f"2h: {d['price_bands']['next_2h']['p10']} – "
                       f"{d['price_bands']['next_2h']['p90']}",
              "inline": True},
-            {"name": f"Trade plans ({d['daily_bias']} bias)",
-             "value": "\n".join(
-                 f"**{t['name']}** [{t['side'].upper()}] "
-                 f"E {t['entry']} / S {t['stop']} / T {t['target']} "
-                 f"(R:R {t['risk_reward']})"
-                 for t in d["trade_plans"]),
+            {"name": "How to play it", "value": d["sleeve_guidance"],
              "inline": False},
-            {"name": "Sleeve", "value": d["sleeve_guidance"], "inline": False},
         ],
-        "footer": {"text": "Measured stats, not predictions · core position "
-                           "unchanged · not financial advice"},
+        "footer": {"text": d.get("candle_note", "") + " · not financial advice"},
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 

@@ -207,20 +207,36 @@ class IntradayRadarEngine(Engine):
                 "Range fade long", "long", sess_lo, sess_lo - atr30, vwap,
                 "Neutral bias: fade the bottom of the range back to VWAP."))
 
-        # -- alignment with the core position (composite) --------------------------
+        # -- day-trade stance & sleeve guidance -----------------------------------
+        # The actionable call is trend-alignment + levels, NOT next-candle
+        # prediction. A day trader's edge is trading WITH the daily bias at
+        # good levels with defined risk — so lead with that, and treat the
+        # (honestly unpredictable) next-candle direction as a footnote, never
+        # as a reason to sit out a with-trend setup.
         comp = load_artifact("composite_signal", require_success=True)
         daily_bias = comp["data"]["label"] if comp else "unknown"
+        if "bull" in daily_bias:
+            stance = "LONG-only"
+            sleeve = (f"Day-trade WITH the {daily_bias} daily trend — take the "
+                      f"long setups below at the levels, defined risk. Skip "
+                      f"shorts while the daily is bullish. Sleeve stays small "
+                      f"and separate from the core long.")
+        elif "bear" in daily_bias:
+            stance = "SHORT-only"
+            sleeve = (f"Day-trade WITH the {daily_bias} daily trend — take the "
+                      f"short setups below. Skip longs while the daily is "
+                      f"bearish. Sleeve stays small and separate from the core.")
+        else:
+            stance = "Two-sided (range)"
+            sleeve = ("No daily trend — fade the range extremes back to VWAP "
+                      "as below, smaller size. This is the regime to be picky "
+                      "or sit out the chop.")
+        # honest footnote about single-candle direction (informational only)
+        candle_note = ("Heads-up: the next single 30m candle's direction is ~a "
+                       "coin toss (true for any market) — your edge is the "
+                       "trend + levels below, not guessing the candle.")
         aligned = (lean == "up" and "bull" in daily_bias) or \
                   (lean == "down" and "bear" in daily_bias)
-        if lean == "none":
-            sleeve = "No statistical lean this candle — trade the levels or sit out."
-        elif aligned:
-            sleeve = (f"Lean {lean.upper()} agrees with the daily "
-                      f"{daily_bias} bias — WITH-trend setup; sleeve stays "
-                      f"small and separate from the core long.")
-        else:
-            sleeve = (f"Lean {lean.upper()} fights the daily {daily_bias} "
-                      f"bias — counter-trend scalp: half sleeve size or skip.")
 
         data = {
             "as_of": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -255,7 +271,9 @@ class IntradayRadarEngine(Engine):
             "price_bands": price_bands,
             "trade_plans": trade_plans,
             "daily_bias": daily_bias,
+            "day_trade_stance": stance,
             "sleeve_guidance": sleeve,
+            "candle_note": candle_note,
             "state_table": state_table,
             "disclaimer": "Measured statistics, not predictions. Core "
                           "position decisions belong to the strategy "
@@ -285,14 +303,9 @@ def main() -> None:
     nc, ev, lv = d["next_candle"], d["edge_verdict"], d["levels"]
     print("Intraday Radar — CL=F 30-minute (doc 010-honest)")
     print("=" * 62)
-    print(f"  Last bar: {d['last_completed_bar']['direction'].upper()} "
-          f"→ state {nc['state']}")
-    print(f"  Next-candle lean: {nc['lean'].upper()}  "
-          f"P(up)={nc['p_up']:.0%} (n={nc['state_sample']}, "
-          f"CI {nc['ci95'][0]:.0%}–{nc['ci95'][1]:.0%})")
-    print(f"  Edge verdict: {ev['edge'].upper()} — hit rate "
-          f"{ev['in_sample_hit_rate']:.1%} over {ev['predictions_scored']} "
-          f"scored predictions (CI low {ev['hit_rate_ci95_low']:.1%})")
+    print(f"  DAY-TRADE STANCE: {d['day_trade_stance']}  "
+          f"(daily bias: {d['daily_bias']})")
+    print(f"  → {d['sleeve_guidance']}")
     print(f"  Levels: px {lv['last_price']} | VWAP {lv['session_vwap']} "
           f"({lv['vs_vwap']:+}) | H {lv['session_high']} / L "
           f"{lv['session_low']} | ATR30 {lv['atr_30m']}")
