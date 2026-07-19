@@ -182,17 +182,19 @@ def build_pnl_embed() -> dict[str, Any] | None:
                        "value": "\n".join(lines), "inline": False})
     acct_lines = []
     for a in d.get("accounts", []):
-        if a.get("verified") is False:        # never publish unverified claims
-            continue
         ret = (f"{a['total_return_pct']:+.0%} ({a['multiple']}x)"
                if a.get("total_return_pct") is not None else "")
         wk = (f" · +{a['week_return_pct']:.0%} wk"
               if a.get("week_return_pct") is not None else "")
-        acct_lines.append(f"**{a['owner']}**: ${a['deposit']:,.0f} → "
-                          f"${a['current_equity']:,.0f}  {ret}{wk}"
-                          if a.get("deposit") else
-                          f"**{a['owner']}**: ${a['current_equity']:,.0f} "
-                          f"({a['broker'] or 'paper'})")
+        # honesty tag: trade-verified vs self-reported
+        tag = "" if a.get("verified", True) else "  _(self-reported)_"
+        if a.get("deposit"):
+            line = (f"**{a['owner']}**: ${a['deposit']:,.0f} → "
+                    f"${a['current_equity']:,.0f}  {ret}{wk}")
+        else:
+            line = (f"**{a['owner']}**: ${a['current_equity']:,.0f} "
+                    f"({a['broker'] or 'paper'})")
+        acct_lines.append(line + tag)
     if acct_lines:
         fields.append({"name": "Account equity (paper)",
                        "value": "\n".join(acct_lines), "inline": False})
