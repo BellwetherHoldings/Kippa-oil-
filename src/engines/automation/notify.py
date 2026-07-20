@@ -146,10 +146,16 @@ def build_daytrade_embed() -> dict[str, Any] | None:
     # green for a directional (LONG/SHORT) stance, amber for range days
     color = 0x2ECC71 if "LONG" in stance else \
             0xE74C3C if "SHORT" in stance else 0xF1C40F
+    tape = ("above VWAP — intraday firm" if lv["vs_vwap"] > 0
+            else "below VWAP — intraday soft" if lv["vs_vwap"] < 0
+            else "at VWAP — intraday flat")
     return {
         "title": f"Day-Trade Radar — CL=F 30m · {stance}",
         "color": color,
         "fields": [
+            {"name": "Intraday tape (short-term)",
+             "value": f"px **${lv['last_price']}** {lv['vs_vwap']:+} vs VWAP "
+                      f"— {tape}", "inline": False},
             {"name": f"▶ Plan of attack ({d['daily_bias']} bias)",
              "value": plans, "inline": False},
             {"name": "Levels",
