@@ -87,6 +87,22 @@ def build_embed() -> dict[str, Any]:
                                 f"{', '.join(g['chokepoints_disrupted']) or 'no chokepoints hit'}",
                        "inline": True})
 
+    # Intraday tape (from the 30m radar) — the short-term direction the
+    # multi-week composite deliberately does NOT track. Surfacing it here
+    # so "BULLISH" is never mistaken for an intraday call when the live
+    # tape is sliding.
+    radar = load_artifact("intraday_radar", require_success=True)
+    if radar:
+        lv = radar["data"]["levels"]
+        tape = ("above VWAP (intraday firm)" if lv["vs_vwap"] > 0
+                else "below VWAP (intraday soft)")
+        fields.append({"name": "Intraday tape (short-term)",
+                       "value": f"px **${lv['last_price']}** {lv['vs_vwap']:+} "
+                                f"vs VWAP — {tape}\n"
+                                f"session {lv['session_low']}–"
+                                f"{lv['session_high']}",
+                       "inline": True})
+
     top = sorted(cd["components"], key=lambda c: c["effective_weight"],
                  reverse=True)[:3]
     fields.append({
@@ -98,10 +114,11 @@ def build_embed() -> dict[str, Any]:
 
     return {
         "title": f"Kippa Oil Intelligence — {cd['label'].upper()} "
-                 f"{cd['composite_score']:+.2f}",
+                 f"{cd['composite_score']:+.2f} · multi-week",
         "color": COLOR.get(cd["label"], 0x95A5A6),
         "fields": fields,
-        "footer": {"text": "22-engine platform · recommendation only, "
+        "footer": {"text": "Multi-week fundamental signal (weeks, not hours) — "
+                           "for intraday direction use the Day-Trade Radar · "
                            "not financial advice"},
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
