@@ -79,9 +79,9 @@
         "Qatar"
       ],
       "chokepoint": "strait_of_hormuz",
-      "description": "De-escalation diplomacy has shifted to Muscat: an Iranian delegation led by FM Araghchi visited Oman for talks on reopening the strait; France and Britain are studying Omani-drafted proposals for IMO-supervised navigational fees. Mediation channels are strained (Oman and Qatar both struck by Iran on 2026-07-12; Pakistan track suspended). Headlines around these talks whipsaw prices in both directions.",
+      "description": "De-escalation diplomacy has shifted to Muscat: an Iranian delegation led by FM Araghchi visited Oman for talks on reopening the strait; France and Britain are studying Omani-drafted proposals for IMO-supervised navigational fees. Mediation channels are strained (Oman and Qatar both struck by Iran on 2026-07-12; Pakistan track suspended). Headlines around these talks whipsaw prices in both directions. 07-20 UPDATE: first real de-escalation flicker — Iran said US talks 'could be pursued based on national interests,' and oil ERASED its gains on the headline (WTI Aug back to ~$79.60). Still two-sided: the IRGC simultaneously claimed full control of the strait and pledged 'not a single drop' passes. This is the #1 invalidation-trigger direction — watch it closely.",
       "start_date": "2026-06-25",
-      "last_update": "2026-07-15",
+      "last_update": "2026-07-20",
       "status": "monitoring",
       "severity": 4,
       "oil_supply_impact": 3,
@@ -89,7 +89,8 @@
       "sources": [
         "https://en.wikipedia.org/wiki/2026_Strait_of_Hormuz_crisis",
         "https://www.aljazeera.com/news/2026/7/2/with-hormuz-reopened-has-the-oil-shortage-turned-into-a-glut",
-        "https://www.ms.now/news/after-another-broken-ceasefire-with-u-s-iran-talks-with-gulf-leaders"
+        "https://www.ms.now/news/after-another-broken-ceasefire-with-u-s-iran-talks-with-gulf-leaders",
+        "https://www.cnbc.com/2026/07/20/oil-prices-today-brent-wti-crude-us-iran-centcom-hormuz.html"
       ]
     }
   ]
