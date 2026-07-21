@@ -30,11 +30,11 @@
       "kind": "paper",
       "broker": null,
       "deposit": 100000,
-      "current_equity": 136100.0,
-      "as_of": "2026-07-19",
+      "current_equity": 143200.0,
+      "as_of": "2026-07-21",
       "week_return_pct": null,
       "verified": true,
-      "note": "Jakob's TradingView paper account (dq8k7jyx22). $100k start (confirmed). Balance $136,100 as of 2026-07-19. Trade-verified."
+      "note": "Jakob's TradingView paper account (dq8k7jyx22). $100k start (confirmed). Balance $143,200 as of 2026-07-21. Trade-verified."
     },
     {
       "id": "titus",
@@ -234,6 +234,40 @@
       "account": "jakob-100k",
       "source": "discord_signal",
       "notes": "TradingView paper (dq8k7jyx22). Closed long CL1! 10 units @ 84.09, avg 81.38, on the Sunday 6 PM ET reopen gap-up. Balance 109,000 -> 136,100."
+    },
+    {
+      "id": "jakob-2026-07-20-1009",
+      "instrument": "CL",
+      "side": "long",
+      "entry_price": 81.86,
+      "entry_date": "2026-07-20",
+      "exit_price": 81.19,
+      "exit_date": "2026-07-20",
+      "units": 5,
+      "point_value": 1000.0,
+      "realized_pnl_usd": -3350.0,
+      "status": "closed",
+      "kind": "paper",
+      "account": "jakob-100k",
+      "source": "discord_signal",
+      "notes": "TradingView paper. Closed long CL1! 5u @ 81.19, avg 81.86 \u2014 LOSS on the Monday de-escalation dip. Balance 136,100 -> 132,750."
+    },
+    {
+      "id": "jakob-2026-07-21-0703",
+      "instrument": "CL",
+      "side": "long",
+      "entry_price": 81.53,
+      "entry_date": "2026-07-21",
+      "exit_price": 83.62,
+      "exit_date": "2026-07-21",
+      "units": 5,
+      "point_value": 1000.0,
+      "realized_pnl_usd": 10450.0,
+      "status": "closed",
+      "kind": "paper",
+      "account": "jakob-100k",
+      "source": "discord_signal",
+      "notes": "TradingView paper. Closed long CL1! 5u @ 83.62, avg 81.53 \u2014 WIN on the rebound. Balance 132,750 -> 143,200."
     }
   ]
 }
