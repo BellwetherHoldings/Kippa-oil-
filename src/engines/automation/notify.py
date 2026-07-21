@@ -138,8 +138,10 @@ def build_daytrade_embed() -> dict[str, Any] | None:
     d = radar["data"]
     lv = d["levels"]
     stance = d.get("day_trade_stance", "—")
+    _tag = {"with-trend": "🟢 with-trend", "counter-trend": "🔻 fade (½ size)",
+            "range-fade": "🔸 range fade"}
     plans = "\n".join(
-        f"**{t['name']}** [{t['side'].upper()}] "
+        f"{_tag.get(t.get('kind'), '')} **{t['name']}** [{t['side'].upper()}] "
         f"E {t['entry']} / S {t['stop']} / T {t['target']} "
         f"(R:R {t['risk_reward']})"
         for t in d["trade_plans"])

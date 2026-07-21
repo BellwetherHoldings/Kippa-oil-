@@ -171,41 +171,61 @@ class IntradayRadarEngine(Engine):
         sess_hi = float(session["high"].max())
         sess_lo = float(session["low"].min())
 
-        def plan(name, side, entry, stop, target, note):
+        def plan(name, side, entry, stop, target, note, kind):
             risk = abs(entry - stop)
             reward = abs(target - entry)
-            return {"name": name, "side": side,
+            return {"name": name, "side": side, "kind": kind,
                     "entry": round(entry, 2), "stop": round(stop, 2),
                     "target": round(target, 2),
                     "risk_reward": round(reward / risk, 2) if risk else None,
                     "note": note}
 
+        # With-trend setups are PRIMARY. A counter-trend fade is offered too —
+        # it's a separate intraday scalp (half size, quick exit) and does not
+        # touch the core position — but it's ranked below the with-trend plays
+        # because fighting the daily trend has a lower base rate.
         trade_plans = []
         if "bull" in bias:
             trade_plans.append(plan(
                 "VWAP pullback long", "long", vwap, vwap - atr30,
                 max(sess_hi, vwap + 1.5 * atr30),
-                "With-trend. Wait for price to come to VWAP; no chase."))
+                "With-trend, PRIMARY. Wait for price to come to VWAP; no chase.",
+                "with-trend"))
             trade_plans.append(plan(
                 "Range breakout long", "long", sess_hi + 0.05,
                 sess_hi + 0.05 - atr30, sess_hi + 0.05 + 1.5 * atr30,
-                "With-trend. Only on a 30m close above the session high."))
+                "With-trend, PRIMARY. Only on a 30m close above the session high.",
+                "with-trend"))
+            trade_plans.append(plan(
+                "Range-high fade short", "short", sess_hi, sess_hi + atr30, vwap,
+                "COUNTER-trend scalp, HALF size. Fade a rejection at the session "
+                "high back to VWAP; bail fast if it breaks out. Separate from the "
+                "core long.", "counter-trend"))
         elif "bear" in bias:
             trade_plans.append(plan(
                 "VWAP fade short", "short", vwap, vwap + atr30,
                 min(sess_lo, vwap - 1.5 * atr30),
-                "With-trend. Wait for the bounce into VWAP."))
+                "With-trend, PRIMARY. Wait for the bounce into VWAP.",
+                "with-trend"))
             trade_plans.append(plan(
                 "Range breakdown short", "short", sess_lo - 0.05,
                 sess_lo - 0.05 + atr30, sess_lo - 0.05 - 1.5 * atr30,
-                "With-trend. Only on a 30m close below the session low."))
+                "With-trend, PRIMARY. Only on a 30m close below the session low.",
+                "with-trend"))
+            trade_plans.append(plan(
+                "Range-low fade long", "long", sess_lo, sess_lo - atr30, vwap,
+                "COUNTER-trend scalp, HALF size. Fade a bounce off the session "
+                "low back to VWAP; quick exit. Separate from the core.",
+                "counter-trend"))
         else:
             trade_plans.append(plan(
                 "Range fade short", "short", sess_hi, sess_hi + atr30, vwap,
-                "Neutral bias: fade the top of the range back to VWAP."))
+                "Neutral bias: fade the top of the range back to VWAP.",
+                "range-fade"))
             trade_plans.append(plan(
                 "Range fade long", "long", sess_lo, sess_lo - atr30, vwap,
-                "Neutral bias: fade the bottom of the range back to VWAP."))
+                "Neutral bias: fade the bottom of the range back to VWAP.",
+                "range-fade"))
 
         # -- day-trade stance & sleeve guidance -----------------------------------
         # The actionable call is trend-alignment + levels, NOT next-candle
@@ -216,16 +236,16 @@ class IntradayRadarEngine(Engine):
         comp = load_artifact("composite_signal", require_success=True)
         daily_bias = comp["data"]["label"] if comp else "unknown"
         if "bull" in daily_bias:
-            stance = "LONG-only"
-            sleeve = (f"Day-trade WITH the {daily_bias} daily trend — take the "
-                      f"long setups below at the levels, defined risk. Skip "
-                      f"shorts while the daily is bullish. Sleeve stays small "
-                      f"and separate from the core long.")
+            stance = "LONG bias · shorts = fades"
+            sleeve = (f"Primary: trade WITH the {daily_bias} daily trend (the long "
+                      f"setups). You CAN short intraday — but only as a "
+                      f"counter-trend fade at the session high, half size, quick "
+                      f"exit. It's a separate scalp; it does not touch the core long.")
         elif "bear" in daily_bias:
-            stance = "SHORT-only"
-            sleeve = (f"Day-trade WITH the {daily_bias} daily trend — take the "
-                      f"short setups below. Skip longs while the daily is "
-                      f"bearish. Sleeve stays small and separate from the core.")
+            stance = "SHORT bias · longs = fades"
+            sleeve = (f"Primary: trade WITH the {daily_bias} daily trend (the short "
+                      f"setups). Counter-trend longs are fades only at the session "
+                      f"low, half size, quick exit — separate from the core.")
         else:
             stance = "Two-sided (range)"
             sleeve = ("No daily trend — fade the range extremes back to VWAP "
