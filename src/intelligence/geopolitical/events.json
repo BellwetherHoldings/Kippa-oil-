@@ -43,7 +43,9 @@
         "https://www.nbcnews.com/business/markets/oil-prices-strait-hormuz-chip-stocks-rcna353328",
         "https://www.pbs.org/newshour/show/what-may-happen-as-oil-supplies-dwindle-and-strait-of-hormuz-remains-mostly-closed",
         "https://www.cnbc.com/2026/07/13/ship-traffic-through-hormuz-falls-as-us-and-iran-fight-for-control.html",
-        "https://www.aljazeera.com/economy/2026/7/10/strait-of-hormuz-shipping-grinds-to-halt-as-us-iran-resume-fighting"
+        "https://www.aljazeera.com/economy/2026/7/10/strait-of-hormuz-shipping-grinds-to-halt-as-us-iran-resume-fighting",
+        "https://www.cnbc.com/2026/07/22/oil-prices-iran-war-macro-rubio-brent-wti.html",
+        "https://www.fxleaders.com/news/2026/07/22/wti-crude-oil-analysis-85-as-ceasefire-collapse-reverses-mou-gains-supply-fear-vs-demand-destruction/"
       ]
     },
     {
@@ -79,9 +81,9 @@
         "Qatar"
       ],
       "chokepoint": "strait_of_hormuz",
-      "description": "De-escalation diplomacy has shifted to Muscat: an Iranian delegation led by FM Araghchi visited Oman for talks on reopening the strait; France and Britain are studying Omani-drafted proposals for IMO-supervised navigational fees. Mediation channels are strained (Oman and Qatar both struck by Iran on 2026-07-12; Pakistan track suspended). Headlines around these talks whipsaw prices in both directions. 07-20 UPDATE: first real de-escalation flicker — Iran said US talks 'could be pursued based on national interests,' and oil ERASED its gains on the headline (WTI Aug back to ~$79.60). Still two-sided: the IRGC simultaneously claimed full control of the strait and pledged 'not a single drop' passes. This is the #1 invalidation-trigger direction — watch it closely.",
+      "description": "De-escalation diplomacy has shifted to Muscat: an Iranian delegation led by FM Araghchi visited Oman for talks on reopening the strait; France and Britain are studying Omani-drafted proposals for IMO-supervised navigational fees. Mediation channels are strained (Oman and Qatar both struck by Iran on 2026-07-12; Pakistan track suspended). Headlines around these talks whipsaw prices in both directions. 07-20: first de-escalation flicker — Iran said US talks 'could be pursued based on national interests,' and oil erased gains. 07-22 REVERSAL: the flicker died — Secretary of State Rubio said Iran is 'not serious' about peace talks and oil jumped ~4% (WTI to ~$87-88); it is now the 11th consecutive night of US strikes on Iran, and the toll/fee dispute over transit vessels is the stated sticking point. Talks path deteriorated, not advanced.",
       "start_date": "2026-06-25",
-      "last_update": "2026-07-20",
+      "last_update": "2026-07-22",
       "status": "monitoring",
       "severity": 4,
       "oil_supply_impact": 3,
