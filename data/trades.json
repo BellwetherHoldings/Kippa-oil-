@@ -41,12 +41,12 @@
       "owner": "Titus",
       "kind": "paper",
       "broker": "FundedE9x",
-      "deposit": 75000,
-      "current_equity": 99901.01,
-      "as_of": "2026-07-17",
+      "deposit": 100000,
+      "current_equity": 131650.0,
+      "as_of": "2026-07-22",
       "week_return_pct": null,
       "verified": true,
-      "note": "Titus's paper account (FundedE9x): $75k start, trading the same Discord signal; latest balance $99,901.01 (2026-07-17). Visible closed trades are a partial slice (balance-chain gap on 2026-07-15), so his full record has more trades than listed."
+      "note": "Titus's paper account. Screenshot 2026-07-21: available funds $131,650, total realized +$31,650 -> implies a $100k start (NOT the $75k said verbally \u2014 CONFIRM). Individual trade list is partial: the +$30,600 and +$1,050 closes in the angled photo weren't legible enough to log with prices."
     }
   ],
   "trades": [
@@ -268,6 +268,40 @@
       "account": "jakob-100k",
       "source": "discord_signal",
       "notes": "TradingView paper. Closed long CL1! 5u @ 83.62, avg 81.53 \u2014 WIN on the rebound. Balance 132,750 -> 143,200."
+    },
+    {
+      "id": "titus-2026-07-21-1700",
+      "instrument": "CL",
+      "side": "long",
+      "entry_price": 82.24,
+      "entry_date": "2026-07-21",
+      "exit_price": 82.78,
+      "exit_date": "2026-07-21",
+      "units": 1,
+      "point_value": 1000.0,
+      "realized_pnl_usd": 540.0,
+      "status": "closed",
+      "kind": "paper",
+      "account": "titus",
+      "source": "discord_signal",
+      "notes": "Close long CL2! 1u @ 82.78, avg 82.24."
+    },
+    {
+      "id": "titus-2026-07-21-1734",
+      "instrument": "CL",
+      "side": "long",
+      "entry_price": 84.62,
+      "entry_date": "2026-07-21",
+      "exit_price": 84.67,
+      "exit_date": "2026-07-21",
+      "units": 6,
+      "point_value": 1000.0,
+      "realized_pnl_usd": 280.0,
+      "status": "closed",
+      "kind": "paper",
+      "account": "titus",
+      "source": "discord_signal",
+      "notes": "Close long CL1! 6u @ 84.67, avg 84.623333."
     }
   ]
 }
