@@ -25,7 +25,8 @@
       "chokepoint": "strait_of_hormuz",
       "description": "Iran closed the Strait of Hormuz 2026-02-28; re-closed 2026-07-13. As of 07-19: third consecutive day of US-Iran fighting. Trump said he would reimpose the US naval blockade on Iranian ships only and demanded other transiting ships pay the US 20% of cargo value as protection; Iran is demanding all ships use a northern route through its territorial waters and continues attacking ships in the US-protected Oman-hugging lane. Transit refinement vs the 07-17 note: 57 transits were recorded Fri-Sun (>50% wk/wk drop, vs ~130/day pre-war), and DOE says 8.5M bbl still transited Sunday with military assistance (total Gulf flows ~15M bpd) — heavily disrupted but not zero. ~25% of seaborne oil trade transits this chokepoint.",
       "start_date": "2026-02-28",
-      "last_update": "2026-07-19",
+      "last_update": "2026-07-23",
+      "update_log_0723": "07-23: escalation widened — reports of attacks on tankers OFF THE SAUDI COAST (beyond Hormuz itself) and Trump renewed threats to intensify strikes on Iran; WTI +~3.8% to ~$90.14 (highest since June 8), Brent ~$98.44. The escalation vector is spreading regionally.",
       "status": "active",
       "severity": 10,
       "oil_supply_impact": 10,
@@ -45,7 +46,8 @@
         "https://www.cnbc.com/2026/07/13/ship-traffic-through-hormuz-falls-as-us-and-iran-fight-for-control.html",
         "https://www.aljazeera.com/economy/2026/7/10/strait-of-hormuz-shipping-grinds-to-halt-as-us-iran-resume-fighting",
         "https://www.cnbc.com/2026/07/22/oil-prices-iran-war-macro-rubio-brent-wti.html",
-        "https://www.fxleaders.com/news/2026/07/22/wti-crude-oil-analysis-85-as-ceasefire-collapse-reverses-mou-gains-supply-fear-vs-demand-destruction/"
+        "https://www.fxleaders.com/news/2026/07/22/wti-crude-oil-analysis-85-as-ceasefire-collapse-reverses-mou-gains-supply-fear-vs-demand-destruction/",
+        "https://www.cnbc.com/2026/07/23/oil-prices-today-wti-brent-trump-iran-hormuz.html"
       ]
     },
     {
