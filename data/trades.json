@@ -42,11 +42,11 @@
       "kind": "paper",
       "broker": "FundedE9x",
       "deposit": 100000,
-      "current_equity": 131650.0,
-      "as_of": "2026-07-22",
+      "current_equity": 132190.0,
+      "as_of": "2026-07-23",
       "week_return_pct": null,
       "verified": true,
-      "note": "Titus's paper account. Screenshot 2026-07-21: available funds $131,650, total realized +$31,650 -> implies a $100k start (NOT the $75k said verbally \u2014 CONFIRM). Individual trade list is partial: the +$30,600 and +$1,050 closes in the angled photo weren't legible enough to log with prices."
+      "note": "Titus paper (FundedE9x), $100k start (reconciles: 100k +30,600 +1,050 = 131,650 total realized +31,650). Balance $131,650 confirmed 07-21; +$540 close 07-23 -> $132,190. Per-trade list is PARTIAL and photo-limited \u2014 his big closes already sum to the balance, so account balance is the source of truth for Titus, not the trade list."
     },
     {
       "id": "jakob-main",
@@ -316,6 +316,23 @@
       "account": "titus",
       "source": "discord_signal",
       "notes": "Close long CL1! 6u @ 84.67, avg 84.623333."
+    },
+    {
+      "id": "titus-2026-07-23-0152",
+      "instrument": "CL",
+      "side": "long",
+      "entry_price": null,
+      "entry_date": "2026-07-23",
+      "exit_price": null,
+      "exit_date": "2026-07-23",
+      "units": null,
+      "point_value": null,
+      "realized_pnl_usd": 540.0,
+      "status": "closed",
+      "kind": "paper",
+      "account": "titus",
+      "source": "discord_signal",
+      "notes": "Close long (Titus) 2026-07-23 01:52 \u2014 +$540. Realized-only; symbol/size/prices not shown in the screenshot."
     }
   ]
 }
