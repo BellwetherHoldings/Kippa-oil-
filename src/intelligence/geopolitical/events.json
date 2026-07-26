@@ -23,11 +23,11 @@
         "Qatar"
       ],
       "chokepoint": "strait_of_hormuz",
-      "description": "Iran closed the Strait of Hormuz 2026-02-28; re-closed 2026-07-13. As of 07-19: third consecutive day of US-Iran fighting. Trump said he would reimpose the US naval blockade on Iranian ships only and demanded other transiting ships pay the US 20% of cargo value as protection; Iran is demanding all ships use a northern route through its territorial waters and continues attacking ships in the US-protected Oman-hugging lane. Transit refinement vs the 07-17 note: 57 transits were recorded Fri-Sun (>50% wk/wk drop, vs ~130/day pre-war), and DOE says 8.5M bbl still transited Sunday with military assistance (total Gulf flows ~15M bpd) — heavily disrupted but not zero. ~25% of seaborne oil trade transits this chokepoint.",
+      "description": "Iran closed the Strait of Hormuz 2026-02-28; re-closed 2026-07-13. As of 07-19: third consecutive day of US-Iran fighting. Trump said he would reimpose the US naval blockade on Iranian ships only and demanded other transiting ships pay the US 20% of cargo value as protection; Iran is demanding all ships use a northern route through its territorial waters and continues attacking ships in the US-protected Oman-hugging lane. Transit refinement vs the 07-17 note: 57 transits were recorded Fri-Sun (>50% wk/wk drop, vs ~130/day pre-war), and DOE says 8.5M bbl still transited Sunday with military assistance (total Gulf flows ~15M bpd) \u2014 heavily disrupted but not zero. ~25% of seaborne oil trade transits this chokepoint.",
       "start_date": "2026-02-28",
       "last_update": "2026-07-26",
-      "update_log_0723": "07-23: escalation widened — reports of attacks on tankers OFF THE SAUDI COAST (beyond Hormuz itself) and Trump renewed threats to intensify strikes on Iran; WTI +~3.8% to ~$90.14 (highest since June 8), Brent ~$98.44. The escalation vector is spreading regionally.",
-      "update_log_0726": "07-26 (weekend): Trump warned that each Iranian attack on a ship in the strait will be met with a US strike on an Iranian bridge or power plant, possibly near/within Tehran — a new infrastructure-targeting threat; Iran responded defiantly. Transits still ~6/day (Jul 18-19). ~27% of seaborne crude/products transit the strait. Talks remain stalled on the Hormuz-control sticking point. Watch the Sunday 6 PM ET reopen for a gap.",
+      "update_log_0723": "07-23: escalation widened \u2014 reports of attacks on tankers OFF THE SAUDI COAST (beyond Hormuz itself) and Trump renewed threats to intensify strikes on Iran; WTI +~3.8% to ~$90.14 (highest since June 8), Brent ~$98.44. The escalation vector is spreading regionally.",
+      "update_log_0726": "07-26 (weekend): Trump warned that each Iranian attack on a ship in the strait will be met with a US strike on an Iranian bridge or power plant, possibly near/within Tehran \u2014 a new infrastructure-targeting threat; Iran responded defiantly. Transits still ~6/day (Jul 18-19). ~27% of seaborne crude/products transit the strait. Talks remain stalled on the Hormuz-control sticking point. Watch the Sunday 6 PM ET reopen for a gap.",
       "status": "active",
       "severity": 10,
       "oil_supply_impact": 10,
@@ -85,7 +85,7 @@
         "Qatar"
       ],
       "chokepoint": "strait_of_hormuz",
-      "description": "De-escalation diplomacy has shifted to Muscat: an Iranian delegation led by FM Araghchi visited Oman for talks on reopening the strait; France and Britain are studying Omani-drafted proposals for IMO-supervised navigational fees. Mediation channels are strained (Oman and Qatar both struck by Iran on 2026-07-12; Pakistan track suspended). Headlines around these talks whipsaw prices in both directions. 07-20: first de-escalation flicker — Iran said US talks 'could be pursued based on national interests,' and oil erased gains. 07-22 REVERSAL: the flicker died — Secretary of State Rubio said Iran is 'not serious' about peace talks and oil jumped ~4% (WTI to ~$87-88); it is now the 11th consecutive night of US strikes on Iran, and the toll/fee dispute over transit vessels is the stated sticking point. Talks path deteriorated, not advanced.",
+      "description": "De-escalation diplomacy has shifted to Muscat: an Iranian delegation led by FM Araghchi visited Oman for talks on reopening the strait; France and Britain are studying Omani-drafted proposals for IMO-supervised navigational fees. Mediation channels are strained (Oman and Qatar both struck by Iran on 2026-07-12; Pakistan track suspended). Headlines around these talks whipsaw prices in both directions. 07-20: first de-escalation flicker \u2014 Iran said US talks 'could be pursued based on national interests,' and oil erased gains. 07-22 REVERSAL: the flicker died \u2014 Secretary of State Rubio said Iran is 'not serious' about peace talks and oil jumped ~4% (WTI to ~$87-88); it is now the 11th consecutive night of US strikes on Iran, and the toll/fee dispute over transit vessels is the stated sticking point. Talks path deteriorated, not advanced.",
       "start_date": "2026-06-25",
       "last_update": "2026-07-22",
       "status": "monitoring",
@@ -98,6 +98,43 @@
         "https://www.ms.now/news/after-another-broken-ceasefire-with-u-s-iran-talks-with-gulf-leaders",
         "https://www.cnbc.com/2026/07/20/oil-prices-today-brent-wti-crude-us-iran-centcom-hormuz.html"
       ]
+    }
+  ],
+  "chokepoint_status": [
+    {
+      "strait_status": "closed",
+      "change_from_previous": "more_restrictive",
+      "estimated_shipping_capacity_percent": 5,
+      "commercial_shipping": "none",
+      "military_risk": "extreme",
+      "insurance_risk": "extreme",
+      "expected_supply_impact": "bullish",
+      "confidence": 0.8,
+      "summary": "Transits collapsed to ~6 vessels/day vs 18-22 earlier in the month and ~130/day pre-war; US naval blockade in force and CENTCOM striking assets along the coast.",
+      "sources": [
+        "https://www.aljazeera.com/economy/2026/7/13/oil-prices-jump-as-us-and-iran-trade-attacks-over-strait-of-hormuz"
+      ],
+      "chokepoint": "strait_of_hormuz",
+      "observed_date": "2026-07-17",
+      "ingested_via": "analyst_classification"
+    },
+    {
+      "strait_status": "partially_open",
+      "change_from_previous": "more_open",
+      "estimated_shipping_capacity_percent": 35,
+      "commercial_shipping": "limited",
+      "military_risk": "extreme",
+      "insurance_risk": "extreme",
+      "expected_supply_impact": "neutral",
+      "confidence": 0.6,
+      "summary": "57 transits recorded Fri-Sun (~19/day, still >50% below the prior week) BUT DOE reports 8.5M bbl moved on Sunday alone with military escort against ~20M bpd normal Hormuz volume. Vessel-count and volume measures disagree (15% vs ~42%), so capacity is a blended estimate at moderate confidence.",
+      "sources": [
+        "https://www.cnbc.com/2026/07/13/ship-traffic-through-hormuz-falls-as-us-and-iran-fight-for-control.html",
+        "https://www.aljazeera.com/economy/2026/7/10/strait-of-hormuz-shipping-grinds-to-halt-as-us-iran-resume-fighting"
+      ],
+      "chokepoint": "strait_of_hormuz",
+      "observed_date": "2026-07-19",
+      "ingested_via": "analyst_classification"
     }
   ]
 }

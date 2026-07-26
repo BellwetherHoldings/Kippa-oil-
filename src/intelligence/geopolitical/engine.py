@@ -26,7 +26,8 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from src.engines.base import Engine, classify
+from src.engines.base import Engine, classify, load_artifact
+from src.intelligence.geopolitical import strait_status
 
 EVENTS_PATH = Path(__file__).resolve().parent / "events.json"
 
@@ -60,6 +61,20 @@ def _risk_level(score: float) -> str:
     return classify(score, RISK_LEVELS)
 
 
+def _inventory_surprise_z() -> float | None:
+    """Latest weekly inventory surprise z, or None if unavailable.
+
+    Positive = more crude arrived than expected, i.e. evidence that a claimed
+    supply disruption is not reaching the tanks.
+    """
+    art = load_artifact("inventory_surprise_summary", require_success=True)
+    if not art:
+        return None
+    latest = art["data"].get("latest") or {}
+    z = latest.get("surprise_z")
+    return float(z) if z is not None else None
+
+
 class GeopoliticalIntelligenceEngine(Engine):
     name = "geopolitical_intelligence"
     version = "1.0"
@@ -85,6 +100,15 @@ class GeopoliticalIntelligenceEngine(Engine):
         evidence: list[str] = []
         survival = 1.0   # soft-OR aggregation: risk = 1 - Π(1 - eventScore)
 
+        # Realized-impact inputs. A chokepoint event's CLAIMED supply impact is
+        # damped toward what is physically happening: how much shipping
+        # capacity actually flows, cross-checked against whether the barrels
+        # are really going missing (inventory surprise). Without this the
+        # score tracks rhetoric — the July 2026 failure mode where Hormuz sat
+        # at 100/100 while crude inventories built.
+        surprise_z = _inventory_surprise_z()
+        damping: dict[str, dict[str, Any]] = {}
+
         for ev in events:
             if ev.get("status") not in SCORING_STATUSES:
                 continue
@@ -100,7 +124,42 @@ class GeopoliticalIntelligenceEngine(Engine):
 
             chokepoint = ev.get("chokepoint")
             amplifier = 1.0 + CHOKEPOINT_FLOW_SHARE.get(chokepoint or "", 0.0)
-            score = min(base * amplifier, 1.0)
+            claimed = min(base * amplifier, 1.0)
+
+            # Damp chokepoint-exposed events by realized shipping conditions.
+            # Non-chokepoint events (e.g. the broader conflict) are unaffected:
+            # capacity data says nothing about them.
+            if chokepoint:
+                if chokepoint not in damping:
+                    # status lives in the SAME registry the events came from —
+                    # one source of truth, and testable against a temp registry
+                    obs = strait_status.latest_status(
+                        chokepoint, path=self.events_path)
+                    factor, detail = strait_status.realized_impact_factor(
+                        obs, surprise_z)
+                    damping[chokepoint] = {"factor": factor, **detail}
+                    if obs is None:
+                        warnings.append(
+                            f"No shipping-status observation for {chokepoint} "
+                            f"— scoring its claimed impact undamped. Ingest "
+                            f"one with: oil geo strait <file.json>")
+                    else:
+                        stale = (today - date.fromisoformat(
+                            obs["observed_date"])).days
+                        if stale > 3:
+                            warnings.append(
+                                f"{chokepoint} shipping status is {stale} days "
+                                f"old ({obs['observed_date']}) — refresh it.")
+                    if factor < 0.85:
+                        warnings.append(
+                            f"{chokepoint} claimed impact damped to "
+                            f"{factor:.0%} of headline severity by realized "
+                            f"conditions (capacity "
+                            f"{detail['capacity_factor']:.2f} × inventory "
+                            f"{detail['inventory_factor']:.2f}).")
+                score = claimed * damping[chokepoint]["factor"]
+            else:
+                score = claimed
 
             staleness = (today - date.fromisoformat(ev["last_update"])).days
             if staleness > 7:
@@ -116,6 +175,9 @@ class GeopoliticalIntelligenceEngine(Engine):
                 "status": ev["status"],
                 "chokepoint": chokepoint,
                 "event_score": round(score, 3),
+                "claimed_score": round(claimed, 3),
+                "realized_damping": round(
+                    damping[chokepoint]["factor"], 3) if chokepoint else 1.0,
                 "severity": ev["severity"],
                 "oil_supply_impact": ev["oil_supply_impact"],
                 "confidence": ev["confidence"],
@@ -147,6 +209,7 @@ class GeopoliticalIntelligenceEngine(Engine):
             "seaborne_trade_share_at_risk": round(
                 sum(CHOKEPOINT_FLOW_SHARE[c] for c in affected), 2
             ),
+            "realized_impact": damping,
             "contributions": contributions,
         }
         return data, sorted(set(evidence))
@@ -169,10 +232,23 @@ def main() -> None:
     print(f"  Price bias:   {d['direction_for_prices']}")
     print(f"  Chokepoints disrupted: {', '.join(d['chokepoints_disrupted']) or 'none'}")
     print(f"  Seaborne trade share at risk: {d['seaborne_trade_share_at_risk']:.0%}")
+    for cp, r in (d.get("realized_impact") or {}).items():
+        print(f"\n  Realized conditions — {cp}:")
+        print(f"    capacity {r['capacity_percent']}% ({r['status_label']}, "
+              f"{r['change_from_previous']}, seen {r['observed_date']})"
+              if r["capacity_percent"] is not None else
+              f"    no shipping observation — claim undamped")
+        print(f"    inventory surprise z {r['inventory_surprise_z']} → "
+              f"factor {r['inventory_factor']}")
+        print(f"    claimed impact damped to {r['combined_factor']:.0%}")
     print(f"\n  Contributing events ({len(d['contributions'])}):")
     for c in d["contributions"]:
+        damp = (f"  (claimed {c['claimed_score']:.2f} × "
+                f"{c['realized_damping']:.2f})"
+                if c["realized_damping"] < 1.0 else "")
         print(f"    [{c['event_score']:.2f}] {c['id']} "
-              f"({c['category']}, {c['status']}, updated {c['last_update']})")
+              f"({c['category']}, {c['status']}, updated {c['last_update']})"
+              f"{damp}")
     for w in result.warnings:
         print(f"  ⚠ {w}")
     print(f"\n  Published → data/geopolitical_risk.json")

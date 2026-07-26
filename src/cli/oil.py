@@ -9,6 +9,7 @@ Governed by docs/016_CLI.md. Commands:
                            → risk → confidence → forecast → sim → strategy
     oil signal show        Composite from existing data (no re-pull)
     oil geo status         Geopolitical risk assessment
+    oil geo strait [file]  Chokepoint shipping status; ingest a classification
     oil supply status      Supply chain stress assessment
     oil sentiment show     CFTC institutional positioning
     oil macro show         FRED macroeconomic conditions
@@ -96,6 +97,26 @@ def _signal_run(arg=None):
 def _geo_status(arg=None):
     from src.intelligence.geopolitical import engine
     engine.main()
+
+
+def _geo_strait(arg=None):
+    """Show the chokepoint status board, or ingest a classification JSON."""
+    import json as _json
+    from src.intelligence.geopolitical import strait_status
+    if not arg:
+        print(strait_status.describe())
+        return
+    path = Path(arg)
+    if not path.exists():
+        raise SystemExit(f"file not found: {arg}")
+    obj = _json.loads(path.read_text())
+    warns = strait_status.ingest(obj)
+    print(f"✓ Ingested {obj['strait_status']} "
+          f"({obj['estimated_shipping_capacity_percent']}% capacity) "
+          f"for strait_of_hormuz.")
+    for w in warns:
+        print(f"  ⚠ {w}")
+    print("\nRe-run `oil geo status` to see the damped risk score.")
 
 
 def _supply_status(arg=None):
@@ -299,6 +320,7 @@ COMMANDS = {
     ("signal", "run"): _signal_run,
     ("signal", "show"): _signal_show,
     ("geo", "status"): _geo_status,
+    ("geo", "strait"): _geo_strait,
     ("supply", "status"): _supply_status,
     ("sentiment", "show"): _sentiment_show,
     ("macro", "show"): _macro_show,
