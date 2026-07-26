@@ -1,9 +1,10 @@
 {
   "_schema": "Composite signal weights (docs/006_Scoring_System.md). This file is version-controlled: every weight change is a reviewed commit with its evidence, never an automatic update (human oversight invariant). The composite engine loads these over its built-in defaults.",
-  "version": 2,
-  "effective_date": "2026-07-14",
+  "version": 3,
+  "effective_date": "2026-07-26",
   "weights": {
-    "geopolitical_risk": 0.30,
+    "geopolitical_risk": 0.18,
+    "chokepoint_capacity": 0.12,
     "inventory_surprise": 0.26,
     "price_momentum": 0.08,
     "supply_chain_stress": 0.14,
@@ -18,6 +19,15 @@
       "raw IC-proportional split would be 96/4; moderated to 76/24 of the shared 0.34 budget because momentum retains value as a staleness-aware fast-tape check even without standalone alpha"
     ]
   },
+  "provisional_weights": {
+    "chokepoint_capacity": {
+      "status": "NOT BACKTESTED — provisional, under observation",
+      "why": "Introduced 2026-07-26 after a documented failure: geopolitical_risk sat pinned at 100/100 for three weeks (rhetoric) while ~8.5M bbl/day still transited the strait and US crude inventories BUILT +2.0M bbl. Event severity and realized supply impact diverged, and the composite had no way to see it.",
+      "weight_basis": "Taken FROM geopolitical_risk (0.30 -> 0.18 + 0.12), not added on top. Both measure the same underlying phenomenon — supply disruption — so the 'disruption budget' stays at 0.30 total, with 40% of it routed through the harder, physically-measured input rather than the narrative one.",
+      "honest_limitation": "There is no information coefficient for this component. The observation series began 2026-07-17 and has too few points for any IC to mean anything. The 0.12 is reasoned, not measured. Revisit once >=26 weekly observations exist and the backtest engine can score it; if it fails to add predictive value, cut it back to geopolitical_risk.",
+      "review_after": "2027-01-31"
+    }
+  },
   "changelog": [
     {
       "version": 1,
@@ -28,6 +38,11 @@
       "version": 2,
       "date": "2026-07-14",
       "note": "Backtest-informed: inventory 0.18→0.26, momentum 0.18→0.08, geopolitical 0.28→0.30."
+    },
+    {
+      "version": 3,
+      "date": "2026-07-26",
+      "note": "Split the disruption budget: geopolitical_risk 0.30→0.18, new chokepoint_capacity 0.12 (realized shipping capacity). Total unchanged at 0.30. Provisional and un-backtested — see provisional_weights."
     }
   ]
 }

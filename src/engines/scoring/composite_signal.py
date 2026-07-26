@@ -12,6 +12,7 @@ Components (signal ∈ [-1, +1], positive = bullish for prices):
     inventory_surprise   — weekly EIA surprise z-score, inverted
     price_momentum       — 5-day WTI return, scaled
     geopolitical_risk    — event-driven supply risk, mapped to [0, 1]
+    chokepoint_capacity  — realized shipping capacity through the strait
 
 Each component's weight is multiplied by a freshness confidence factor:
 stale inputs lose voice instead of silently lying.
@@ -48,10 +49,16 @@ SURPRISE_PATH = DATA_DIR / "inventory_surprise.csv"
 # absent.
 WEIGHTS_CONFIG = _REPO_ROOT / "config" / "weights.json"
 
+# How much a capacity TREND (more_open / more_restrictive) tilts the
+# chokepoint signal beyond its level. Deliberately modest: direction is a
+# leading hint, not the measurement.
+CAPACITY_TREND_TILT = 0.15
+
 _DEFAULT_WEIGHTS = {
     "geopolitical_risk": 0.28,
     "inventory_surprise": 0.18,
     "price_momentum": 0.18,
+    "chokepoint_capacity": 0.00,   # config/weights.json is the real source
     "supply_chain_stress": 0.14,
     "market_sentiment": 0.12,
     "macro_conditions": 0.10,
@@ -76,6 +83,7 @@ def _load_weights() -> tuple[dict[str, float], str]:
 # cadence; confidence decays linearly to the floor once data outruns it.
 EXPECTED_LAG_DAYS = {
     "geopolitical_risk": 2,
+    "chokepoint_capacity": 2,    # shipping conditions move daily in a crisis
     "inventory_surprise": 12,   # weekly series + EIA publication lag
     "price_momentum": 4,
     "supply_chain_stress": 12,  # weekly EIA series
@@ -187,6 +195,47 @@ class CompositeSignalEngine(Engine):
             warnings.extend(geo.warnings)
         else:
             warnings.append(f"geopolitical_risk failed and was excluded: {geo.error}")
+
+        # -- chokepoint capacity (realized shipping, not rhetoric) -------------
+        # Measures how much oil physically CANNOT move, from validated
+        # observations of the strait itself. Separate from geopolitical_risk
+        # on purpose: that engine scores how bad the situation is, this one
+        # scores whether the barrels are actually stopping. In July 2026 those
+        # diverged hard — headlines maxed, ~8.5M bbl/day still transiting —
+        # and only this measure would have caught it.
+        from src.intelligence.geopolitical import strait_status
+        cap_obs = strait_status.latest_status("strait_of_hormuz")
+        if cap_obs:
+            cap_stale = (today - date.fromisoformat(
+                cap_obs["observed_date"])).days
+            cap_pct = float(cap_obs["estimated_shipping_capacity_percent"])
+            # level: fraction of flow blocked, [0, 1] bullish-only
+            disruption = 1.0 - cap_pct / 100.0
+            # direction: the leading part. Capacity improving pulls the signal
+            # down even while the level is still elevated (and vice versa) —
+            # a reopening also unwinds accumulated premium (the "glut trade").
+            tilt = {"more_open": -CAPACITY_TREND_TILT,
+                    "more_restrictive": CAPACITY_TREND_TILT,
+                    "no_change": 0.0}[cap_obs["change_from_previous"]]
+            cap_signal = _clip(disruption + tilt)
+            components.append({
+                "component": "chokepoint_capacity",
+                "signal": round(cap_signal, 3),
+                "as_of": cap_obs["observed_date"],
+                "staleness_days": cap_stale,
+                "confidence": round(
+                    _freshness_confidence("chokepoint_capacity", cap_stale)
+                    * float(cap_obs.get("confidence", 1.0)), 2),
+                "detail": f"{cap_pct:.0f}% capacity "
+                          f"({cap_obs['strait_status']}, "
+                          f"{cap_obs['change_from_previous']}), shipping "
+                          f"{cap_obs['commercial_shipping']}",
+            })
+            evidence.extend(cap_obs.get("sources", []))
+        else:
+            warnings.append(
+                "chokepoint_capacity excluded — no shipping-status "
+                "observation on file (ingest one: oil geo strait <file.json>)")
 
         # -- supply chain stress ----------------------------------------------
         from src.intelligence.supply_chain.engine import (

@@ -205,3 +205,43 @@ def test_engine_warns_and_leaves_claim_undamped_without_status(tmp_path):
     assert res.ok
     assert any("No shipping-status observation" in w for w in res.warnings)
     assert res.data["realized_impact"]["strait_of_hormuz"]["combined_factor"] == 1.0
+
+
+# -- composite integration ---------------------------------------------------
+
+def test_capacity_signal_mapping_and_trend_tilt():
+    """Level measures blockage; direction leads it."""
+    from src.engines.scoring.composite_signal import CAPACITY_TREND_TILT as T
+
+    def sig(cap, change):
+        disruption = 1.0 - cap / 100.0
+        tilt = {"more_open": -T, "more_restrictive": T, "no_change": 0.0}[change]
+        return max(-1.0, min(1.0, disruption + tilt))
+
+    # fully blocked and worsening => maximally bullish
+    assert sig(0, "more_restrictive") == pytest.approx(1.0)
+    # fully open and still opening => mildly BEARISH (premium unwind)
+    assert sig(100, "more_open") < 0
+    # improving capacity scores lower than the same level holding steady
+    assert sig(35, "more_open") < sig(35, "no_change") < sig(35, "more_restrictive")
+    # a real block outranks a leaky one
+    assert sig(5, "no_change") > sig(60, "no_change")
+
+
+def test_weights_include_capacity_and_still_sum_to_one():
+    from src.engines.scoring.composite_signal import _load_weights
+    w, src = _load_weights()
+    assert "chokepoint_capacity" in w
+    assert sum(w.values()) == pytest.approx(1.0, abs=1e-3)
+    # the disruption budget was split, not inflated
+    assert w["geopolitical_risk"] + w["chokepoint_capacity"] == pytest.approx(0.30)
+
+
+def test_provisional_weight_is_labelled_unbacktested():
+    """An un-evidenced weight must say so (no black-box weighting)."""
+    import json as _json
+    cfg = _json.loads(
+        (REPO_ROOT / "config" / "weights.json").read_text())
+    prov = cfg["provisional_weights"]["chokepoint_capacity"]
+    assert "NOT BACKTESTED" in prov["status"]
+    assert prov["honest_limitation"] and prov["review_after"]
