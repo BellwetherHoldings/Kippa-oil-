@@ -62,17 +62,18 @@
         "Israel"
       ],
       "chokepoint": null,
-      "description": "Active military conflict between the US/Israel and Iran since late February 2026, including ongoing missile exchanges as of mid-July 2026. Drives the Hormuz closure and poses direct risk to Gulf production, export terminals, and shipping.",
+      "description": "Active military conflict between the US/Israel and Iran since late February 2026. 07-27 MATERIAL DE-ESCALATION: the two sides HALTED STRIKES against each other over the weekend \u2014 the US paused its attacks starting late Friday and Tehran halted retaliatory strikes \u2014 amid efforts to revive diplomacy. WTI fell ~5% to ~$84.83 and Brent ~4.7% to ~$92.27 on the news. This is a pause, not a settlement: the underlying conflict is unresolved and the strait remains shut, but the active-strike tempo that drove the July premium has stopped. Severity and supply impact cut accordingly (9/7 -> 7/5).",
       "start_date": "2026-02-28",
-      "last_update": "2026-07-17",
+      "last_update": "2026-07-27",
       "status": "active",
-      "severity": 9,
-      "oil_supply_impact": 7,
-      "confidence": 0.95,
+      "severity": 7,
+      "oil_supply_impact": 5,
+      "confidence": 0.9,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_Strait_of_Hormuz_crisis",
         "https://tradingeconomics.com/commodity/crude-oil",
-        "https://www.cnn.com/2026/07/11/world/live-news/iran-war-trump"
+        "https://www.cnn.com/2026/07/11/world/live-news/iran-war-trump",
+        "https://www.euronews.com/business/2026/07/27/oil-prices-plunge-as-us-and-iran-pause-strikes-over-strait-of-hormuz"
       ]
     },
     {
@@ -86,8 +87,9 @@
       ],
       "chokepoint": "strait_of_hormuz",
       "description": "De-escalation diplomacy has shifted to Muscat: an Iranian delegation led by FM Araghchi visited Oman for talks on reopening the strait; France and Britain are studying Omani-drafted proposals for IMO-supervised navigational fees. Mediation channels are strained (Oman and Qatar both struck by Iran on 2026-07-12; Pakistan track suspended). Headlines around these talks whipsaw prices in both directions. 07-20: first de-escalation flicker \u2014 Iran said US talks 'could be pursued based on national interests,' and oil erased gains. 07-22 REVERSAL: the flicker died \u2014 Secretary of State Rubio said Iran is 'not serious' about peace talks and oil jumped ~4% (WTI to ~$87-88); it is now the 11th consecutive night of US strikes on Iran, and the toll/fee dispute over transit vessels is the stated sticking point. Talks path deteriorated, not advanced.",
+      "update_log_0727": "07-27: diplomacy REVIVING \u2014 the mutual strike pause over the weekend was explicitly framed as an effort to restart talks. This is the #1 invalidation-trigger direction for the bullish thesis: if it firms into a reopening framework, the remaining premium unwinds. Not yet a settlement; the strait is still shut and no shipping-capacity change has been reported.",
       "start_date": "2026-06-25",
-      "last_update": "2026-07-22",
+      "last_update": "2026-07-27",
       "status": "monitoring",
       "severity": 4,
       "oil_supply_impact": 3,
@@ -96,7 +98,8 @@
         "https://en.wikipedia.org/wiki/2026_Strait_of_Hormuz_crisis",
         "https://www.aljazeera.com/news/2026/7/2/with-hormuz-reopened-has-the-oil-shortage-turned-into-a-glut",
         "https://www.ms.now/news/after-another-broken-ceasefire-with-u-s-iran-talks-with-gulf-leaders",
-        "https://www.cnbc.com/2026/07/20/oil-prices-today-brent-wti-crude-us-iran-centcom-hormuz.html"
+        "https://www.cnbc.com/2026/07/20/oil-prices-today-brent-wti-crude-us-iran-centcom-hormuz.html",
+        "https://www.euronews.com/business/2026/07/27/oil-prices-plunge-as-us-and-iran-pause-strikes-over-strait-of-hormuz"
       ]
     }
   ],
