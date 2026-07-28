@@ -25,9 +25,10 @@
       "chokepoint": "strait_of_hormuz",
       "description": "Iran closed the Strait of Hormuz 2026-02-28; re-closed 2026-07-13. As of 07-19: third consecutive day of US-Iran fighting. Trump said he would reimpose the US naval blockade on Iranian ships only and demanded other transiting ships pay the US 20% of cargo value as protection; Iran is demanding all ships use a northern route through its territorial waters and continues attacking ships in the US-protected Oman-hugging lane. Transit refinement vs the 07-17 note: 57 transits were recorded Fri-Sun (>50% wk/wk drop, vs ~130/day pre-war), and DOE says 8.5M bbl still transited Sunday with military assistance (total Gulf flows ~15M bpd) \u2014 heavily disrupted but not zero. ~25% of seaborne oil trade transits this chokepoint.",
       "start_date": "2026-02-28",
-      "last_update": "2026-07-26",
+      "last_update": "2026-07-28",
       "update_log_0723": "07-23: escalation widened \u2014 reports of attacks on tankers OFF THE SAUDI COAST (beyond Hormuz itself) and Trump renewed threats to intensify strikes on Iran; WTI +~3.8% to ~$90.14 (highest since June 8), Brent ~$98.44. The escalation vector is spreading regionally.",
       "update_log_0726": "07-26 (weekend): Trump warned that each Iranian attack on a ship in the strait will be met with a US strike on an Iranian bridge or power plant, possibly near/within Tehran \u2014 a new infrastructure-targeting threat; Iran responded defiantly. Transits still ~6/day (Jul 18-19). ~27% of seaborne crude/products transit the strait. Talks remain stalled on the Hormuz-control sticking point. Watch the Sunday 6 PM ET reopen for a gap.",
+      "update_log_0728": "07-28: THE CLOSURE ITSELF HAS NOT CHANGED \u2014 severity held at 10/10. Trackers put the strait at day 148 closed. Traffic averaged ~10 ships/day 07-13 to 07-19 vs an ~88/day normal baseline; 15 transits on 07-19; the tanker queue off Kharg Island grew to 24 vessels on 07-26 from 21. What changed is the CONFLICT tempo around it, not the waterway. This event is deliberately left at its headline severity and damped downstream by the realized-capacity factor \u2014 see the 07-28 chokepoint_status observation (32%, confidence 0.55). Do not cut this event's severity to express de-escalation; that is the capacity component's job.",
       "status": "active",
       "severity": 10,
       "oil_supply_impact": 10,
@@ -63,17 +64,21 @@
       ],
       "chokepoint": null,
       "description": "Active military conflict between the US/Israel and Iran since late February 2026. 07-27 MATERIAL DE-ESCALATION: the two sides HALTED STRIKES against each other over the weekend \u2014 the US paused its attacks starting late Friday and Tehran halted retaliatory strikes \u2014 amid efforts to revive diplomacy. WTI fell ~5% to ~$84.83 and Brent ~4.7% to ~$92.27 on the news. This is a pause, not a settlement: the underlying conflict is unresolved and the strait remains shut, but the active-strike tempo that drove the July premium has stopped. Severity and supply impact cut accordingly (9/7 -> 7/5).",
+      "update_log_0728": "07-28: THE PAUSE HELD A SECOND DAY. No new US strikes; Tehran halted retaliation against US allies. US ambassador to the UN Mike Waltz said Trump would give negotiations 'a little bit of room'; Trump said the US halted strikes at the regime's request and will resume if no ceasefire deal is reached. WTI extended losses ~3% to ~$80.11 (Sep contract), Brent ~$85.08-86.58. Severity cut 7 -> 6 and supply impact 5 -> 4: a second quiet day with no vessel attacks since the Kaifan on 07-20 is a real change in tempo, not just a headline. Caveat below in the talks event \u2014 Iran publicly denies negotiating with the US at all.",
       "start_date": "2026-02-28",
-      "last_update": "2026-07-27",
+      "last_update": "2026-07-28",
       "status": "active",
-      "severity": 7,
-      "oil_supply_impact": 5,
+      "severity": 6,
+      "oil_supply_impact": 4,
       "confidence": 0.9,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_Strait_of_Hormuz_crisis",
         "https://tradingeconomics.com/commodity/crude-oil",
         "https://www.cnn.com/2026/07/11/world/live-news/iran-war-trump",
-        "https://www.euronews.com/business/2026/07/27/oil-prices-plunge-as-us-and-iran-pause-strikes-over-strait-of-hormuz"
+        "https://www.euronews.com/business/2026/07/27/oil-prices-plunge-as-us-and-iran-pause-strikes-over-strait-of-hormuz",
+        "https://www.manilatimes.net/2026/07/28/world/americas-emea/us-iran-pause-strikes-to-give-talks-some-space/2392066",
+        "https://www.aljazeera.com/amp/news/2026/7/26/us-and-iran-hit-pause-on-strikes-for-second-day",
+        "https://www.cnbc.com/2026/07/28/oil-price-today-wti-brent-us-iran-hormuz.html"
       ]
     },
     {
@@ -88,18 +93,45 @@
       "chokepoint": "strait_of_hormuz",
       "description": "De-escalation diplomacy has shifted to Muscat: an Iranian delegation led by FM Araghchi visited Oman for talks on reopening the strait; France and Britain are studying Omani-drafted proposals for IMO-supervised navigational fees. Mediation channels are strained (Oman and Qatar both struck by Iran on 2026-07-12; Pakistan track suspended). Headlines around these talks whipsaw prices in both directions. 07-20: first de-escalation flicker \u2014 Iran said US talks 'could be pursued based on national interests,' and oil erased gains. 07-22 REVERSAL: the flicker died \u2014 Secretary of State Rubio said Iran is 'not serious' about peace talks and oil jumped ~4% (WTI to ~$87-88); it is now the 11th consecutive night of US strikes on Iran, and the toll/fee dispute over transit vessels is the stated sticking point. Talks path deteriorated, not advanced.",
       "update_log_0727": "07-27: diplomacy REVIVING \u2014 the mutual strike pause over the weekend was explicitly framed as an effort to restart talks. This is the #1 invalidation-trigger direction for the bullish thesis: if it firms into a reopening framework, the remaining premium unwinds. Not yet a settlement; the strait is still shut and no shipping-capacity change has been reported.",
+      "update_log_0728": "07-28 CONTRADICTION ON THE RECORD \u2014 read this before treating the pause as a peace process. Iran's Foreign Ministry spokesperson Esmail Baghaei said Monday that Iran 'currently have no negotiations with the United States' and that its only official talks are with OMAN, about the future of the strait. Washington simultaneously describes the pause as giving negotiations room. Both cannot be fully true. Confidence in the diplomatic track is therefore cut 0.8 -> 0.6 and severity held: the strike pause is verified (observable, two days of no strikes), the negotiation is not. Treat the pause as a military fact and the talks as an unconfirmed claim.",
       "start_date": "2026-06-25",
-      "last_update": "2026-07-27",
+      "last_update": "2026-07-28",
       "status": "monitoring",
       "severity": 4,
       "oil_supply_impact": 3,
-      "confidence": 0.8,
+      "confidence": 0.6,
       "sources": [
         "https://en.wikipedia.org/wiki/2026_Strait_of_Hormuz_crisis",
         "https://www.aljazeera.com/news/2026/7/2/with-hormuz-reopened-has-the-oil-shortage-turned-into-a-glut",
         "https://www.ms.now/news/after-another-broken-ceasefire-with-u-s-iran-talks-with-gulf-leaders",
         "https://www.cnbc.com/2026/07/20/oil-prices-today-brent-wti-crude-us-iran-centcom-hormuz.html",
-        "https://www.euronews.com/business/2026/07/27/oil-prices-plunge-as-us-and-iran-pause-strikes-over-strait-of-hormuz"
+        "https://www.euronews.com/business/2026/07/27/oil-prices-plunge-as-us-and-iran-pause-strikes-over-strait-of-hormuz",
+        "https://www.cnn.com/2026/07/27/world/live-news/iran-war-trump",
+        "https://www.cnn.com/2026/07/28/world/live-news/iran-trump-news"
+      ]
+    },
+    {
+      "id": "cpc-black-sea-drone-disruption-2026",
+      "category": "infrastructure_attack",
+      "region": "Black Sea / Caspian",
+      "countries": [
+        "Kazakhstan",
+        "Russia",
+        "Ukraine"
+      ],
+      "chokepoint": null,
+      "description": "Unidentified drones struck four tankers at the Caspian Pipeline Consortium (CPC) marine terminal near Novorossiysk between 07-17 and 07-20, suspending loadings for a week. Kazakh oil and gas condensate output fell to ~1.0M bpd by 07-26. RESOLVED 07-27: CPC restarted crude intake and tanker loading (SEAMAJESTY and MILOS loading Tengizchevroil crude at two single-point moorings); operations continue subject to security assessment. This is a NON-HORMUZ supply channel returning \u2014 a bearish input independent of the Iran file, and part of why WTI extended losses on 07-28. Kazakhstan produced 45.7Mt in H1 2026, -8.4% y/y; full-year target cut to 98Mt.",
+      "start_date": "2026-07-17",
+      "last_update": "2026-07-28",
+      "status": "resolved",
+      "severity": 4,
+      "oil_supply_impact": 4,
+      "confidence": 0.85,
+      "sources": [
+        "https://oilprice.com/Latest-Energy-News/World-News/Kazakhstan-Restarts-CPC-Oil-Exports-After-Week-Long-Black-Sea-Shutdown.html",
+        "https://astanatimes.com/2026/07/kazakhstan-resumes-cpc-oil-exports-as-marine-terminal-reopens/",
+        "https://www.rigzone.com/news/wire/cpc_oil_terminal_resumes_kazakh_crude_exports-27-jul-2026-184222-article/",
+        "https://www.cnbc.com/2026/07/28/oil-price-today-wti-brent-us-iran-hormuz.html"
       ]
     }
   ],
@@ -137,6 +169,27 @@
       ],
       "chokepoint": "strait_of_hormuz",
       "observed_date": "2026-07-19",
+      "ingested_via": "analyst_classification"
+    },
+    {
+      "strait_status": "partially_open",
+      "change_from_previous": "no_change",
+      "estimated_shipping_capacity_percent": 32,
+      "commercial_shipping": "limited",
+      "military_risk": "high",
+      "insurance_risk": "extreme",
+      "expected_supply_impact": "bearish",
+      "confidence": 0.55,
+      "summary": "First refresh since 07-19. Vessel-count leg confirmed and slightly worse: traffic averaged ~10 ships/day 07-13 to 07-19 against an ~88/day normal baseline (about 11%), with 15 transits on 07-19, and the tanker queue off Kharg Island grew to 24 vessels on 07-26 from 21 the day before - ships are waiting, not moving. The volume leg is unrefreshed: the last hard figure is DOE's 8.5M bbl on 07-19, now nine days old, so the blended 32% carries reduced confidence rather than a changed level. Military risk cut extreme -> high: no US or Iranian strikes for a second consecutive day and no vessel attacked since the Kuwaiti tanker Kaifan on 07-20. Insurance risk held at extreme - war-risk premiums have not been reported as repricing on a two-day pause. Supply impact bearish on the strike pause plus the CPC Black Sea terminal restart, not on any capacity improvement in the strait itself, which has not occurred.",
+      "sources": [
+        "https://www.statista.com/chart/35984/ship-traffic-in-the-strait-of-hormuz/",
+        "https://www.nbcnews.com/data-graphics/strait-of-hormuz-ports-traffic-trump-us-iran-war-rcna331507",
+        "https://straits.live/",
+        "https://www.aljazeera.com/amp/news/2026/7/26/us-and-iran-hit-pause-on-strikes-for-second-day",
+        "https://en.wikipedia.org/wiki/2026_Strait_of_Hormuz_crisis"
+      ],
+      "chokepoint": "strait_of_hormuz",
+      "observed_date": "2026-07-28",
       "ingested_via": "analyst_classification"
     }
   ]
