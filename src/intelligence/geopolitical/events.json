@@ -25,7 +25,7 @@
       "chokepoint": "strait_of_hormuz",
       "description": "Iran closed the Strait of Hormuz 2026-02-28; re-closed 2026-07-13. As of 07-19: third consecutive day of US-Iran fighting. Trump said he would reimpose the US naval blockade on Iranian ships only and demanded other transiting ships pay the US 20% of cargo value as protection; Iran is demanding all ships use a northern route through its territorial waters and continues attacking ships in the US-protected Oman-hugging lane. Transit refinement vs the 07-17 note: 57 transits were recorded Fri-Sun (>50% wk/wk drop, vs ~130/day pre-war), and DOE says 8.5M bbl still transited Sunday with military assistance (total Gulf flows ~15M bpd) \u2014 heavily disrupted but not zero. ~25% of seaborne oil trade transits this chokepoint.",
       "start_date": "2026-02-28",
-      "last_update": "2026-07-31",
+      "last_update": "2026-08-01",
       "update_log_0723": "07-23: escalation widened \u2014 reports of attacks on tankers OFF THE SAUDI COAST (beyond Hormuz itself) and Trump renewed threats to intensify strikes on Iran; WTI +~3.8% to ~$90.14 (highest since June 8), Brent ~$98.44. The escalation vector is spreading regionally.",
       "update_log_0726": "07-26 (weekend): Trump warned that each Iranian attack on a ship in the strait will be met with a US strike on an Iranian bridge or power plant, possibly near/within Tehran \u2014 a new infrastructure-targeting threat; Iran responded defiantly. Transits still ~6/day (Jul 18-19). ~27% of seaborne crude/products transit the strait. Talks remain stalled on the Hormuz-control sticking point. Watch the Sunday 6 PM ET reopen for a gap.",
       "update_log_0728": "07-28: THE CLOSURE ITSELF HAS NOT CHANGED \u2014 severity held at 10/10. Trackers put the strait at day 148 closed. Traffic averaged ~10 ships/day 07-13 to 07-19 vs an ~88/day normal baseline; 15 transits on 07-19; the tanker queue off Kharg Island grew to 24 vessels on 07-26 from 21. What changed is the CONFLICT tempo around it, not the waterway. This event is deliberately left at its headline severity and damped downstream by the realized-capacity factor \u2014 see the 07-28 chokepoint_status observation (32%, confidence 0.55). Do not cut this event's severity to express de-escalation; that is the capacity component's job.",
@@ -55,7 +55,8 @@
       ],
       "update_log_0729": "07-29: no reported change to the waterway itself - the 07-28 escalation hit Jordan and eastern Iraq, not Gulf shipping or energy infrastructure. No new vessel attack reported since the Kaifan on 07-20. Severity held at 10/10; the 07-28 capacity observation (32%, confidence 0.55) still stands and is now 1 day old.",
       "update_log_0730": "07-30: MarineTraffic recorded at least 14 commercial transits in the prior 24 hours (8 inbound to the Gulf, 6 outbound to the Gulf of Oman) against a pre-war baseline of ~120 crossings per day - roughly 12% of normal traffic. Severity held at 10/10. The 07-29 US strikes hit Iranian COASTAL SURVEILLANCE, DEFENCE AND MARITIME CAPABILITIES at Bandar Abbas and Kish, i.e. the assets Iran uses to threaten the waterway. Near term that raises risk; over a longer horizon degrading those assets could REDUCE Iran's ability to keep the strait shut. Both readings are live; neither is scored as a capacity change until transits actually move.",
-      "update_log_0731": "07-31 FIRST RECOVERY SIGNAL IN THE WATERWAY ITSELF. Commonwealth Bank of Australia estimates traffic through the strait has recovered to roughly 30-35% of pre-war levels, and oil rose only modestly on the session (WTI Sep +1.54% to $84.87, Brent +1.37% to $90.25) BECAUSE the flow recovery eased supply concerns. This is the first independent third-party capacity estimate we have had, and it corroborates the 07-30 blended in-house figure of 30% almost exactly. Severity held at 10/10 - the closure regime is unchanged - but the realized-capacity observation is refreshed to 33% with confidence raised 0.50 -> 0.65 and direction flipped to more_open. Note the tension with the 07-30 vessel count (14 transits/24h vs ~120 pre-war, ~12%): CBA is likely measuring volume rather than vessel count, which is the leg that had gone stale."
+      "update_log_0731": "07-31 FIRST RECOVERY SIGNAL IN THE WATERWAY ITSELF. Commonwealth Bank of Australia estimates traffic through the strait has recovered to roughly 30-35% of pre-war levels, and oil rose only modestly on the session (WTI Sep +1.54% to $84.87, Brent +1.37% to $90.25) BECAUSE the flow recovery eased supply concerns. This is the first independent third-party capacity estimate we have had, and it corroborates the 07-30 blended in-house figure of 30% almost exactly. Severity held at 10/10 - the closure regime is unchanged - but the realized-capacity observation is refreshed to 33% with confidence raised 0.50 -> 0.65 and direction flipped to more_open. Note the tension with the 07-30 vessel count (14 transits/24h vs ~120 pre-war, ~12%): CBA is likely measuring volume rather than vessel count, which is the leg that had gone stale.",
+      "update_log_0801": "08-01: no fresh transit count over the weekend; the 07-31 observation (33% capacity, confidence 0.65, more_open) stands and is 1 day old. IMPORTANT REVISION to the bypass framing: Yanbu loadings are running ~4.0M bpd vs ~973k a year ago, which is the East-West pipeline doing its job - but Yanbu barrels exit via Bab el-Mandeb, now under Houthi blockade. The Hormuz escape valve is partially blocked at its far end."
     },
     {
       "id": "us-israel-iran-conflict-2026",
@@ -70,7 +71,7 @@
       "description": "Active military conflict between the US/Israel and Iran since late February 2026. 07-27 MATERIAL DE-ESCALATION: the two sides HALTED STRIKES against each other over the weekend \u2014 the US paused its attacks starting late Friday and Tehran halted retaliatory strikes \u2014 amid efforts to revive diplomacy. WTI fell ~5% to ~$84.83 and Brent ~4.7% to ~$92.27 on the news. This is a pause, not a settlement: the underlying conflict is unresolved and the strait remains shut, but the active-strike tempo that drove the July premium has stopped. Severity and supply impact cut accordingly (9/7 -> 7/5).",
       "update_log_0728": "07-28: THE PAUSE HELD A SECOND DAY. No new US strikes; Tehran halted retaliation against US allies. US ambassador to the UN Mike Waltz said Trump would give negotiations 'a little bit of room'; Trump said the US halted strikes at the regime's request and will resume if no ceasefire deal is reached. WTI extended losses ~3% to ~$80.11 (Sep contract), Brent ~$85.08-86.58. Severity cut 7 -> 6 and supply impact 5 -> 4: a second quiet day with no vessel attacks since the Kaifan on 07-20 is a real change in tempo, not just a headline. Caveat below in the talks event \u2014 Iran publicly denies negotiating with the US at all.",
       "start_date": "2026-02-28",
-      "last_update": "2026-07-31",
+      "last_update": "2026-08-01",
       "status": "active",
       "severity": 8,
       "oil_supply_impact": 7,
@@ -101,7 +102,8 @@
       "update_log_0729_airdefense": "07-29 NEW STRUCTURAL RISK - interceptor depletion. Analysis reported 07-28 puts US Patriot stocks at 759-827, down from 2,330 pre-war (-65%), and THAAD at 234-278 from 452. US forces are now reported to be DELIBERATELY LETTING SOME IRANIAN MISSILES THROUGH where a strike is judged not to threaten American lives. CSIS estimates three years to replenish. This does not change today's supply picture but it materially fattens the left tail: the probability that a future Iranian salvo actually lands on energy infrastructure rises as the shield thins. Tracked as a risk driver, not scored as a supply disruption.",
       "update_log_0730": "07-30 THE US RETALIATED - HEAVY WAVE. Trump said it was 'our turn'; CENTCOM completed a heavy wave of strikes at ~10 PM ET on 07-29 against DOZENS of IRGC targets: military command centres, missile and drone facilities, and - the part that matters for oil - COASTAL SURVEILLANCE AND DEFENCE SITES AND MARITIME CAPABILITIES. Explosions reported across southern Iran including BANDAR ABBAS and KISH ISLAND, both directly on the Strait of Hormuz. Jordan's military said it intercepted five of the Iranian missiles fired 07-28. Brent jumped ~7% to $90.66 on Trump's retaliation threat. Severity 6 -> 9, supply impact 4 -> 7. This is the highest tempo since the 07-23 peak.",
       "update_log_0730_energy_restraint": "07-30 KEY RESTRAINT, EXPLICITLY SOURCED: Israel's Defence Minister said the US has been PREVENTING Israel from striking Iranian energy infrastructure over economic and energy concerns, and CENTCOM's 07-29 wave targeted military and IRGC positions - NOT energy infrastructure. This is the single most important bullish-tail limiter on the board: the escalation is severe but is being deliberately steered away from the barrels. If that restraint breaks, the escalation scenario repricing is immediate and large.",
-      "update_log_0731": "07-31: no new strike round reported overnight after the 07-29 US retaliation wave. The policy vector shifted to ECONOMIC: Trump wants Congress to add tariffs on Iran to the bipartisan Russia/Iran sanctions bill (reported 07-30). Analysts note the direct effect is minimal because the US imports almost nothing from Iran; the live question is the separate 25% secondary-tariff threat on countries trading with Iran, announced 01-12 and still without published implementation guidance. Iran exports ~1.3M bpd of crude, almost all to China, plus refined products to the UAE, Turkey, Iraq, India and Pakistan. Severity cut 9 -> 8 and supply impact held at 7: one quiet night is a tempo change, not a resolution, and sanctions escalation is a supply risk in its own right."
+      "update_log_0731": "07-31: no new strike round reported overnight after the 07-29 US retaliation wave. The policy vector shifted to ECONOMIC: Trump wants Congress to add tariffs on Iran to the bipartisan Russia/Iran sanctions bill (reported 07-30). Analysts note the direct effect is minimal because the US imports almost nothing from Iran; the live question is the separate 25% secondary-tariff threat on countries trading with Iran, announced 01-12 and still without published implementation guidance. Iran exports ~1.3M bpd of crude, almost all to China, plus refined products to the UAE, Turkey, Iraq, India and Pakistan. Severity cut 9 -> 8 and supply impact held at 7: one quiet night is a tempo change, not a resolution, and sanctions escalation is a supply risk in its own right.",
+      "update_log_0801": "08-01 (Saturday, market closed): no new US-Iran strike round reported over Friday night. Severity held at 8. WTI ended the week near $84 after an $8+ weekly range and finished July up roughly a fifth; Brent settled around $86-89 and gained more than 20% on the month. Two escalation vectors OUTSIDE the Iran file moved instead and are now logged separately: the Houthi blockade of Saudi shipping at Bab el-Mandeb, and Ukraine's strike on Lukoil's Volgograd refinery. Trump's statement that the US will hold IRAN responsible for Houthi attacks is the thread tying the first of those back to this event."
     },
     {
       "id": "us-iran-qatar-talks-2026",
@@ -157,6 +159,58 @@
         "https://astanatimes.com/2026/07/kazakhstan-resumes-cpc-oil-exports-as-marine-terminal-reopens/",
         "https://www.rigzone.com/news/wire/cpc_oil_terminal_resumes_kazakh_crude_exports-27-jul-2026-184222-article/",
         "https://www.cnbc.com/2026/07/28/oil-price-today-wti-brent-us-iran-hormuz.html"
+      ]
+    },
+    {
+      "id": "bab-el-mandeb-houthi-blockade-2026",
+      "category": "chokepoint_disruption",
+      "region": "Red Sea / Arabian Peninsula",
+      "countries": [
+        "Yemen",
+        "Saudi Arabia",
+        "Iran",
+        "United States"
+      ],
+      "chokepoint": "bab_el_mandeb",
+      "description": "SECOND DISRUPTED CHOKEPOINT - added to the registry 08-01 after a review found it missing. Yemen's Houthis declared a complete maritime blockade of Saudi Arabia on 2026-07-20. On 07-22 they claimed a drone and missile attack on two Saudi tankers, ENCELIA and LAYLA; the Saudi Press Agency confirmed Encelia was hit, all crew safe. It was the first strike enforcing the blockade. Vessels are rerouting away from Bab el-Mandeb in growing numbers. Total petroleum transiting the strait was 7.4M bpd in June, roughly 7% of global oil output. Trump said the US will hold IRAN responsible for future Houthi attacks, which links this file directly to the Hormuz file. Saudi MFA says the Kingdom is taking all necessary measures to protect its ships. Houthis have not yet targeted port infrastructure.",
+      "start_date": "2026-07-20",
+      "last_update": "2026-08-01",
+      "update_log_0801_coupling": "08-01 THE COUPLING THAT MATTERS: Kpler and Signal Ocean ship-tracking shows Saudi loadings from YANBU averaging 4.0M bpd in recent weeks against ~973k bpd a year earlier. Yanbu is the Red Sea terminus of the East-West (Petroline) pipeline - i.e. it is THE Hormuz bypass route. Those bypassed barrels then have to transit Bab el-Mandeb, which is now under a declared Houthi blockade. The two chokepoints are therefore no longer independent: the escape valve for Hormuz empties into the second disrupted strait. This materially weakens the 'bypass capacity caps the Hormuz premium' argument that the 07-31 report used as the structural bear case, and it should be treated as a correction to that framing rather than an addition to it.",
+      "status": "active",
+      "severity": 7,
+      "oil_supply_impact": 6,
+      "confidence": 0.85,
+      "sources": [
+        "https://www.aljazeera.com/news/2026/7/20/yemens-houthis-declare-naval-blockade-of-saudi-arabia-what-to-know",
+        "https://www.aljazeera.com/news/2026/7/22/yemens-houthis-claim-attack-on-two-saudi-oil-tankers",
+        "https://www.fdd.org/analysis/2026/07/22/houthis-announce-blockade-of-saudi-arabia-ships-reroute-to-avoid-bab-al-mandeb-strait/",
+        "https://www.cnbc.com/2026/07/22/houthis-red-sea-bab-el-mandeb-saudi-oil-iran.html",
+        "https://www.cnbc.com/2026/07/23/iran-war-us-trump-houthis-red-sea-oil.html",
+        "https://thehill.com/policy/international/5991796-houthi-saudi-arabia-attacks-bab-el-mandeb-strait/"
+      ]
+    },
+    {
+      "id": "russia-refinery-drone-campaign-2026",
+      "category": "infrastructure_attack",
+      "region": "Russia / Eastern Europe",
+      "countries": [
+        "Russia",
+        "Ukraine"
+      ],
+      "chokepoint": null,
+      "description": "Ukraine's long-range drone campaign against Russian refining. On the night of 07-30/31 Ukrainian Defence Intelligence and defence forces struck LUKOIL'S VOLGOGRAD REFINERY - the largest fuel producer in Russia's Southern Federal District, design capacity ~15.7M tonnes of crude a year, supplying diesel and aviation fuel to Russian forces in southern Ukraine. NASA FIRMS showed several large active fires. Cumulative effect reported: Ukrainian strikes have put MORE THAN 30% of Russia's operational refining capacity (45% of nominal) out of service. Added to the registry 08-01 - this is a PRODUCT-side supply event, not a crude-side one, and it had been missing from the file. It tightens global diesel and jet balances independently of Hormuz, and it is a live reason distillates keep drawing.",
+      "start_date": "2026-01-01",
+      "last_update": "2026-08-01",
+      "status": "active",
+      "severity": 6,
+      "oil_supply_impact": 5,
+      "confidence": 0.8,
+      "sources": [
+        "https://oilprice.com/Latest-Energy-News/World-News/Ukraine-Strikes-Lukoils-Volgograd-Refinery-as-Drone-Attacks-Resume.html",
+        "https://kyivindependent.com/wildberries-warehouse-oil-refineries-reportedly-attacked-volgograd-krasnodar/",
+        "https://www.pravda.com.ua/eng/news/2026/07/31/8046668/",
+        "https://www.themoscowtimes.com/2026/07/31/ukraine-hits-wildberries-logistics-center-and-energy-facility-in-volgograd-killing-at-least-one-a93383",
+        "https://euromaidanpress.com/2026/07/31/the-drones-hit-volgograd-then-kept-flying-1100-km-to-tatarstan/"
       ]
     }
   ],
@@ -254,6 +308,26 @@
       ],
       "chokepoint": "strait_of_hormuz",
       "observed_date": "2026-07-31",
+      "ingested_via": "analyst_classification"
+    },
+    {
+      "strait_status": "mostly_open",
+      "change_from_previous": "more_restrictive",
+      "estimated_shipping_capacity_percent": 70,
+      "commercial_shipping": "moderate",
+      "military_risk": "high",
+      "insurance_risk": "high",
+      "expected_supply_impact": "bullish",
+      "confidence": 0.45,
+      "summary": "First observation for this chokepoint. The Houthis declared a complete maritime blockade of Saudi Arabia on 07-20 and enforced it once, on 07-22, striking the tankers Encelia and Layla with drones and missiles; the Saudi Press Agency confirmed Encelia was hit with all crew safe. FDD reports a growing number of vessels rerouting to avoid Bab el-Mandeb. Crucially the Houthis have NOT yet targeted vessels or port infrastructure beyond that single action, so this is a declared blockade only partially enforced rather than a closure. Total petroleum transiting was 7.4M bpd in June, about 7% of global output. Capacity is estimated at 70% and confidence is deliberately LOW at 0.45 because we have no transit count for this waterway at all - only qualitative rerouting reports. Treat the number as a placeholder that the damping should discount, not a measurement.",
+      "sources": [
+        "https://www.aljazeera.com/news/2026/7/20/yemens-houthis-declare-naval-blockade-of-saudi-arabia-what-to-know",
+        "https://www.fdd.org/analysis/2026/07/22/houthis-announce-blockade-of-saudi-arabia-ships-reroute-to-avoid-bab-al-mandeb-strait/",
+        "https://www.aljazeera.com/news/2026/7/22/yemens-houthis-claim-attack-on-two-saudi-oil-tankers",
+        "https://thehill.com/policy/international/5991796-houthi-saudi-arabia-attacks-bab-el-mandeb-strait/"
+      ],
+      "chokepoint": "bab_el_mandeb",
+      "observed_date": "2026-08-01",
       "ingested_via": "analyst_classification"
     }
   ]
