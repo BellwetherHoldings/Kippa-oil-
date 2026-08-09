@@ -149,6 +149,27 @@ def _backtest_run(arg=None):
     engine.main()
 
 
+def _signal_log(arg=None):
+    from src.engines.backtesting import signal_log
+    signal_log.main()
+
+
+def _signal_logstats(arg=None):
+    import json as _json
+    from src.engines.backtesting.signal_log import stats
+    print(_json.dumps(stats(), indent=2))
+
+
+def _backtest_replay(arg=None):
+    from src.engines.backtesting import replay
+    replay.main([arg] if arg else [])
+
+
+def _backtest_sim(arg=None):
+    from src.engines.backtesting import sim_ledger
+    sim_ledger.main([arg] if arg else [])
+
+
 def _forecast_show(arg=None):
     from src.engines.forecast import engine
     engine.main()
@@ -319,6 +340,10 @@ COMMANDS = {
     ("data", "quality"): _data_quality,
     ("signal", "run"): _signal_run,
     ("signal", "show"): _signal_show,
+    ("signal", "log"): _signal_log,
+    ("signal", "logstats"): _signal_logstats,
+    ("backtest", "replay"): _backtest_replay,
+    ("backtest", "sim"): _backtest_sim,
     ("geo", "status"): _geo_status,
     ("geo", "strait"): _geo_strait,
     ("supply", "status"): _supply_status,
@@ -364,6 +389,8 @@ JSON_ARTIFACTS = {
     ("risk", "status"): "risk_assessment",
     ("confidence", "show"): "signal_confidence",
     ("backtest", "run"): "backtest_report",
+    ("backtest", "replay"): "replay_report",
+    ("backtest", "sim"): "sim_trades",
     ("forecast", "show"): "price_forecast",
     ("sim", "run"): "simulation_results",
     ("strategy", "show"): "strategy_recommendation",

@@ -77,6 +77,15 @@ def run_cycle(cycle: int) -> None:
     label = comp["data"]["label"] if comp else "unknown"
     score = comp["data"]["composite_score"] if comp else None
 
+    # full component-vector capture (doc 010): the composite scalar alone
+    # cannot answer later which input carried a call. Never let a capture
+    # failure break the cycle — the signal log is observation, not control.
+    try:
+        from src.engines.backtesting.signal_log import capture
+        capture(trigger="watch_cycle")
+    except Exception as exc:                              # noqa: BLE001
+        print(f"signal log capture failed: {exc}", file=sys.stderr)
+
     if failed == 0:
         send_discord_update()
     else:
