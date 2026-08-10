@@ -120,11 +120,18 @@ class CompositeSignalEngine(Engine):
     version = "1.0"
     output_name = "composite_signal"
 
+    # Components that must be present for the score to mean what the
+    # historical series means. Missing any of these does not stop the run,
+    # but it does mark the output not-comparable — see execute().
+    BENCHMARK_COMPONENTS = ("inventory_surprise",)
+
     def validate_input(self, inputs: dict[str, Any]) -> None:
-        if not SURPRISE_PATH.exists():
-            raise ValueError(
-                f"{SURPRISE_PATH} not found. Run the inventory pipeline first."
-            )
+        # inventory_surprise used to hard-fail here while every other
+        # component degraded with a warning. That asymmetry took the whole
+        # composite — and confidence, strategy, forecasting, the Discord
+        # embed and signal capture behind it — dark whenever EIA was
+        # unreachable. It now degrades like the rest, and the output says
+        # loudly that it is degraded rather than pretending otherwise.
         _load_weights()   # fail here, in the validate stage, on a bad config
 
     def execute(
@@ -136,23 +143,40 @@ class CompositeSignalEngine(Engine):
         evidence: list[str] = []
 
         # -- inventory surprise (weekly, stale by design) -------------------
-        surprise = pd.read_csv(SURPRISE_PATH, parse_dates=["period"])
-        latest = surprise.dropna(subset=["surprise_z"]).iloc[-1]
-        inv_stale = (today - latest["period"].date()).days
-        inv_signal = _clip(-float(latest["surprise_z"]) / 3.0)
-        components.append({
-            "component": "inventory_surprise",
-            "signal": round(inv_signal, 3),
-            "as_of": latest["period"].date().isoformat(),
-            "staleness_days": inv_stale,
-            "confidence": _freshness_confidence("inventory_surprise", inv_stale),
-            "detail": f"surprise_z={latest['surprise_z']:+.2f} "
-                      f"(surprise {latest['surprise']:+,.0f} kbbl vs seasonal)",
-        })
-        evidence.append(
-            f"EIA weekly inventories through {latest['period'].date()} "
-            f"(data/inventory_surprise.csv)"
-        )
+        if SURPRISE_PATH.exists():
+            surprise = pd.read_csv(SURPRISE_PATH, parse_dates=["period"])
+            rows = surprise.dropna(subset=["surprise_z"])
+            if rows.empty:
+                warnings.append(
+                    "inventory_surprise excluded: no scored rows in "
+                    f"{SURPRISE_PATH.name}."
+                )
+            else:
+                latest = rows.iloc[-1]
+                inv_stale = (today - latest["period"].date()).days
+                inv_signal = _clip(-float(latest["surprise_z"]) / 3.0)
+                components.append({
+                    "component": "inventory_surprise",
+                    "signal": round(inv_signal, 3),
+                    "as_of": latest["period"].date().isoformat(),
+                    "staleness_days": inv_stale,
+                    "confidence": _freshness_confidence(
+                        "inventory_surprise", inv_stale),
+                    "detail": f"surprise_z={latest['surprise_z']:+.2f} "
+                              f"(surprise {latest['surprise']:+,.0f} kbbl "
+                              f"vs seasonal)",
+                })
+                evidence.append(
+                    f"EIA weekly inventories through "
+                    f"{latest['period'].date()} "
+                    f"(data/inventory_surprise.csv)"
+                )
+        else:
+            warnings.append(
+                f"inventory_surprise excluded: {SURPRISE_PATH.name} not "
+                f"found (EIA unreachable). The composite is NOT comparable "
+                f"to scores that included it — see degraded_vs_benchmark."
+            )
 
         # -- price momentum --------------------------------------------------
         momo = PriceMomentumEngine().run()
@@ -328,10 +352,28 @@ class CompositeSignalEngine(Engine):
 
         components.sort(key=lambda c: c["effective_weight"], reverse=True)
 
+        # -- comparability guard (doc 006 explainability) ---------------------
+        # A score built from a different component set is a different
+        # statistic wearing the same name. Say so in the artifact itself so
+        # no downstream reader — Discord embed, signal log, report table —
+        # can silently compare across a composition change.
+        present = {c["component"] for c in components}
+        missing_benchmark = [
+            c for c in self.BENCHMARK_COMPONENTS if c not in present
+        ]
+        excluded_weight = round(
+            sum(weights[c] for c in missing_benchmark), 3
+        )
+
         data = {
             "composite_score": round(float(score), 3),
             "label": _label(float(score)),
             "as_of": today.isoformat(),
+            "components_scored": len(components),
+            "degraded_vs_benchmark": bool(missing_benchmark),
+            "missing_benchmark_components": missing_benchmark,
+            "excluded_nominal_weight": excluded_weight,
+            "comparable_to_history": not missing_benchmark,
             "components": components,
             "methodology": (
                 "score = Σ(weight × freshness_confidence × signal) / "
