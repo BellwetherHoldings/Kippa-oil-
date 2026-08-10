@@ -24,7 +24,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from src.data.live_prices import load_price_history
+from src.data.live_prices import LIVE_PATH, load_price_history
 from src.engines.base import DATA_DIR, Engine
 
 PRICES_PATH = DATA_DIR / "wti_prices.csv"
@@ -40,9 +40,14 @@ class PriceMomentumEngine(Engine):
     output_name = "price_momentum"
 
     def validate_input(self, inputs: dict[str, Any]) -> None:
-        if not PRICES_PATH.exists():
+        # Either source satisfies this engine: it needs a price series, not
+        # specifically EIA spot. load_price_history() splices whichever
+        # exist and tags every row with 'source'.
+        if not PRICES_PATH.exists() and not LIVE_PATH.exists():
             raise ValueError(
-                f"{PRICES_PATH} not found. Run src/data/eia_client.py first."
+                f"No price history: neither {PRICES_PATH.name} nor "
+                f"{LIVE_PATH.name} found. Run src/data/eia_client.py or "
+                f"src/data/live_prices.py first."
             )
 
     def execute(

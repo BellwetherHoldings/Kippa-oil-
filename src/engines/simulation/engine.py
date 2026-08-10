@@ -48,8 +48,15 @@ class SimulationEngine(Engine):
     def validate_input(self, inputs: dict[str, Any]) -> None:
         if not SCENARIOS_PATH.exists():
             raise ValueError(f"{SCENARIOS_PATH} not found.")
-        if not (DATA_DIR / "wti_prices.csv").exists():
-            raise ValueError("wti_prices.csv not found — pull data first.")
+        # execute() reads via load_price_history(), which splices EIA spot
+        # and the live CL=F tail and works from either alone — so guard on
+        # "any price series", not on the EIA file specifically.
+        from src.data.live_prices import LIVE_PATH
+        if not (DATA_DIR / "wti_prices.csv").exists() and not LIVE_PATH.exists():
+            raise ValueError(
+                "No price history — run src/data/eia_client.py or "
+                "src/data/live_prices.py first."
+            )
 
     def execute(
         self, inputs: dict[str, Any], warnings: list[str]

@@ -105,8 +105,32 @@ def load_price_history() -> pd.DataFrame:
     when the live file is missing, empty, or unreadable — a corrupt tail
     must never black out the whole price stack. EIA rows NEWER than the
     live window are kept (a stale live file cannot hide fresher EIA data).
+
+    Degrades the OTHER way too: when the EIA file is absent but the live
+    tail is present, return live-only rather than raising. The 2026-08-08
+    container recycle took data/wti_prices.csv with it (EIA needs a key,
+    .env is gitignored and does not survive a recycle), and the missing
+    spot history blacked out momentum, vol, the composite, simulation and
+    P&L — every one of which only needs *a* price series, not specifically
+    RWTC. The 'source' column already carries provenance downstream, so a
+    CL=F-only stack is self-describing rather than silently mislabelled.
+    Front-month futures are NOT Cushing spot: they differ by roll and by
+    basis, which widens in backwardation. Consumers must read 'source'.
     """
-    eia = pd.read_csv(DATA_DIR / "wti_prices.csv", parse_dates=["date"])
+    eia_path = DATA_DIR / "wti_prices.csv"
+    if not eia_path.exists():
+        if not LIVE_PATH.exists():
+            raise FileNotFoundError(
+                f"No price history: neither {eia_path.name} nor "
+                f"{LIVE_PATH.name} exists. Pull EIA data or run "
+                f"src/data/live_prices.py."
+            )
+        live_only = pd.read_csv(LIVE_PATH, parse_dates=["date"]).dropna(
+            subset=["date", "close"])
+        live_only["source"] = "CL=F"
+        return live_only.sort_values("date").reset_index(drop=True)
+
+    eia = pd.read_csv(eia_path, parse_dates=["date"])
     eia["source"] = "RWTC"
     if not LIVE_PATH.exists():
         return eia
