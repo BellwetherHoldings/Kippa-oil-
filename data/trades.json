@@ -42,11 +42,11 @@
       "kind": "paper",
       "broker": "FundedE9x",
       "deposit": 100000,
-      "current_equity": 132190.0,
-      "as_of": "2026-07-23",
+      "current_equity": 134810.0,
+      "as_of": "2026-08-11",
       "week_return_pct": null,
       "verified": true,
-      "note": "Titus paper (FundedE9x), $100k start (reconciles: 100k +30,600 +1,050 = 131,650 total realized +31,650). Balance $131,650 confirmed 07-21; +$540 close 07-23 -> $132,190. Per-trade list is PARTIAL and photo-limited \u2014 his big closes already sum to the balance, so account balance is the source of truth for Titus, not the trade list."
+      "note": "Titus paper (FundedE9x), $100k start (reconciles: 100k +30,600 +1,050 = 131,650 total realized +31,650). Balance $131,650 confirmed 07-21; +$540 close 07-23 -> $132,190; +$2,620 close 08-11 (CL1! 2u @ 83.50 vs avg 82.19) -> $134,810. Per-trade list is PARTIAL and photo-limited - his big closes already sum to the balance, so account balance is the source of truth for Titus, not the trade list. CAUTION ON DOUBLE-COUNTING: the 08-11 close was added to BOTH the trade list and this balance. That is correct here because the balance was as_of 07-23, before the fill - but the two ledgers are separate accounting systems for this account and any future balance screenshot must be reconciled against, not added to, the trades logged since its as_of date."
     },
     {
       "id": "jakob-main",
@@ -333,6 +333,23 @@
       "account": "titus",
       "source": "discord_signal",
       "notes": "Close long (Titus) 2026-07-23 01:52 \u2014 +$540. Realized-only; symbol/size/prices not shown in the screenshot."
+    },
+    {
+      "id": "titus-2026-08-11-0138",
+      "instrument": "CL",
+      "side": "long",
+      "entry_price": 82.19,
+      "entry_date": "2026-08-11",
+      "exit_price": 83.5,
+      "exit_date": "2026-08-11",
+      "units": 2,
+      "point_value": 1000.0,
+      "realized_pnl_usd": 2620.0,
+      "status": "closed",
+      "kind": "paper",
+      "account": "titus",
+      "source": "discord_signal",
+      "notes": "Close long NYMEX:CL1! 2u @ 83.50, position avg 82.19. Logged 08-14 from a screenshot timestamped 2026-08-11 01:38:26 \u2014 a BACKFILL, not a same-day fill. Arithmetic verified: (83.50-82.19) x 2 x 1000 = 2620. Entry date recorded as the exit date because the screenshot shows only the closing action and an average price; the actual open date is unknown and this trade should not be used to measure holding period."
     }
   ]
 }
