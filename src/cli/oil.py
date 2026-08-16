@@ -110,10 +110,13 @@ def _geo_strait(arg=None):
     if not path.exists():
         raise SystemExit(f"file not found: {arg}")
     obj = _json.loads(path.read_text())
-    warns = strait_status.ingest(obj)
+    # The registry tracks seven chokepoints; let the classification say which
+    # one it describes instead of silently filing everything under Hormuz.
+    chokepoint = obj.pop("chokepoint", "strait_of_hormuz")
+    warns = strait_status.ingest(obj, chokepoint=chokepoint)
     print(f"✓ Ingested {obj['strait_status']} "
           f"({obj['estimated_shipping_capacity_percent']}% capacity) "
-          f"for strait_of_hormuz.")
+          f"for {chokepoint}.")
     for w in warns:
         print(f"  ⚠ {w}")
     print("\nRe-run `oil geo status` to see the damped risk score.")
