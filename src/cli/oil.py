@@ -174,6 +174,12 @@ def _backtest_gates(arg=None):
     gate_sweep.main([arg] if arg else [])
 
 
+def _backtest_intraday(arg=None):
+    """Simulated ledger for the day-trade signals, kept separate from daily."""
+    from src.engines.backtesting import intraday_sim
+    intraday_sim.main([arg] if arg else [])
+
+
 def _backtest_sim(arg=None):
     from src.engines.backtesting import sim_ledger
     sim_ledger.main([arg] if arg else [])
@@ -354,6 +360,7 @@ COMMANDS = {
     ("backtest", "replay"): _backtest_replay,
     ("backtest", "sim"): _backtest_sim,
     ("backtest", "gates"): _backtest_gates,
+    ("backtest", "intraday"): _backtest_intraday,
     ("geo", "status"): _geo_status,
     ("geo", "strait"): _geo_strait,
     ("supply", "status"): _supply_status,
@@ -402,6 +409,7 @@ JSON_ARTIFACTS = {
     ("backtest", "replay"): "replay_report",
     ("backtest", "sim"): "sim_trades",
     ("backtest", "gates"): "gate_sweep",
+    ("backtest", "intraday"): "intraday_sim",
     ("forecast", "show"): "price_forecast",
     ("sim", "run"): "simulation_results",
     ("strategy", "show"): "strategy_recommendation",

@@ -48,12 +48,13 @@
       ]
     },
     "daily_validation": {
-      "description": "Daily research validation, run once per morning report. Rebuilds the simulated trade ledger from the live signal log and re-sweeps the entry gate across the out-of-sample panel. Research only (doc 010 invariant 6) - never feeds production decisions. Exists so that 'how many trades has the signal produced' is answered by an artifact on a schedule, not by remembering to ask.",
+      "description": "Daily research validation, run once per morning report. Rebuilds the DAILY composite trade ledger from the live signal log, sweeps the entry gate across the out-of-sample panel, rebuilds the INTRADAY ledger from 60d of 30m bars, and refreshes the backtest report. The daily and intraday ledgers are separate artifacts on purpose - different horizons, costs and sample sizes; pooling them would hide the differences. Research only (doc 010 invariant 6); never feeds production decisions.",
       "max_retries": 1,
       "on_failure": "continue",
       "steps": [
         "sim_ledger",
         "gate_sweep",
+        "intraday_sim",
         "backtest"
       ]
     }

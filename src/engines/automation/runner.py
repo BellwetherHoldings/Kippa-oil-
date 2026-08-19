@@ -88,6 +88,8 @@ STEPS: dict[str, Callable[[], None]] = {
         "src.engines.backtesting.sim_ledger", "SimLedgerEngine"),
     "gate_sweep": _engine_step(
         "src.engines.backtesting.gate_sweep", "GateSweepEngine"),
+    "intraday_sim": _engine_step(
+        "src.engines.backtesting.intraday_sim", "IntradaySimEngine"),
 }
 
 

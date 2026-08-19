@@ -189,7 +189,14 @@ class GateSweepEngine(Engine):
         out: dict[float, int] = {}
         for gate in GATES:
             try:
-                r = SimLedgerEngine(gate=gate).run({})
+                # output_name is suppressed so these throwaway sweeps do not
+                # overwrite data/sim_trades.json. Without this the LAST gate
+                # in the loop silently becomes the published daily ledger —
+                # which it did, replacing a 1-trade ledger with gate 0.40's
+                # empty one until it was caught.
+                eng = SimLedgerEngine(gate=gate)
+                eng.output_name = None
+                r = eng.run({})
                 out[gate] = r.data["summary"].get("closed", 0)
             except Exception as exc:                       # noqa: BLE001
                 warnings.append(f"live yield at gate {gate} unavailable: {exc}")
