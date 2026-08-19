@@ -168,6 +168,12 @@ def _backtest_replay(arg=None):
     replay.main([arg] if arg else [])
 
 
+def _backtest_gates(arg=None):
+    """Sweep the entry gate against the replay panel, not the live log."""
+    from src.engines.backtesting import gate_sweep
+    gate_sweep.main([arg] if arg else [])
+
+
 def _backtest_sim(arg=None):
     from src.engines.backtesting import sim_ledger
     sim_ledger.main([arg] if arg else [])
@@ -347,6 +353,7 @@ COMMANDS = {
     ("signal", "logstats"): _signal_logstats,
     ("backtest", "replay"): _backtest_replay,
     ("backtest", "sim"): _backtest_sim,
+    ("backtest", "gates"): _backtest_gates,
     ("geo", "status"): _geo_status,
     ("geo", "strait"): _geo_strait,
     ("supply", "status"): _supply_status,
@@ -394,6 +401,7 @@ JSON_ARTIFACTS = {
     ("backtest", "run"): "backtest_report",
     ("backtest", "replay"): "replay_report",
     ("backtest", "sim"): "sim_trades",
+    ("backtest", "gates"): "gate_sweep",
     ("forecast", "show"): "price_forecast",
     ("sim", "run"): "simulation_results",
     ("strategy", "show"): "strategy_recommendation",

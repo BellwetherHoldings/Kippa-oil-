@@ -57,9 +57,13 @@ class SimLedgerEngine(Engine):
     output_name = "sim_trades"
 
     def __init__(self, slippage: float = DEFAULT_SLIPPAGE,
-                 min_rows: int = MIN_ROWS) -> None:
+                 min_rows: int = MIN_ROWS, gate: float = GATE) -> None:
         super().__init__()
         self.slippage = float(slippage)
+        # The gate is a parameter so it can be swept, but a gate chosen by
+        # sweeping THIS log would be fitted to nine days. Gate selection
+        # belongs to the 678-week replay panel; see gate_sweep.py.
+        self.gate = float(gate)
         # Guard against drawing conclusions from a near-empty log. Lowered
         # only by tests, which need short deterministic fixtures.
         self.min_rows = int(min_rows)
@@ -91,7 +95,7 @@ class SimLedgerEngine(Engine):
             when = r["at"]
 
             if open_pos is None:
-                if abs(score) >= GATE:
+                if abs(score) >= self.gate:
                     side = "long" if score > 0 else "short"
                     fill = px + self.slippage if side == "long" \
                         else px - self.slippage
@@ -166,7 +170,7 @@ class SimLedgerEngine(Engine):
         )
 
         data = {
-            "gate": GATE,
+            "gate": self.gate,
             "slippage_per_bbl": self.slippage,
             "max_hold_hours": MAX_HOLD_HOURS,
             "notional_bbl_per_lot": NOTIONAL_BBL,
@@ -184,7 +188,7 @@ class SimLedgerEngine(Engine):
         evidence = [
             f"{len(rows)} signal-log rows",
             f"{len(trades)} closed simulated trades",
-            f"gate |{GATE}|, slippage {self.slippage}/bbl",
+            f"gate |{self.gate}|, slippage {self.slippage}/bbl",
         ]
         return data, evidence
 
