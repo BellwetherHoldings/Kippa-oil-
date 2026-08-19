@@ -86,6 +86,16 @@ def run_cycle(cycle: int) -> None:
     except Exception as exc:                              # noqa: BLE001
         print(f"signal log capture failed: {exc}", file=sys.stderr)
 
+    # Re-simulate the trade ledger off the row we just captured. Deliberately
+    # AFTER capture so it reflects this cycle, not the previous one, and
+    # deliberately fail-open for the same reason as the capture above: this is
+    # research observation, never control (doc 010 invariant 6).
+    try:
+        from src.engines.backtesting.sim_ledger import SimLedgerEngine
+        SimLedgerEngine().run({})
+    except Exception as exc:                              # noqa: BLE001
+        print(f"sim ledger refresh failed: {exc}", file=sys.stderr)
+
     if failed == 0:
         send_discord_update()
     else:

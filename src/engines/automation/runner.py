@@ -79,6 +79,15 @@ STEPS: dict[str, Callable[[], None]] = {
         "src.engines.strategy.engine", "StrategyEngine"),
     "monitoring": _engine_step(
         "src.monitoring.engine", "MonitoringEngine"),
+    # Research validation. These never touch production decisions
+    # (doc 010 invariant 6) but they must run on a schedule rather than
+    # when someone remembers: a signal log that is captured but never
+    # simulated tells you nothing, which is exactly what happened between
+    # 08-10 and 08-19.
+    "sim_ledger": _engine_step(
+        "src.engines.backtesting.sim_ledger", "SimLedgerEngine"),
+    "gate_sweep": _engine_step(
+        "src.engines.backtesting.gate_sweep", "GateSweepEngine"),
 }
 
 
