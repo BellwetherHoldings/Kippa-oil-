@@ -170,6 +170,7 @@ class IntradayRadarEngine(Engine):
         bias = comp_early["data"]["label"] if comp_early else "neutral"
         sess_hi = float(session["high"].max())
         sess_lo = float(session["low"].min())
+        last_px = float(last["close"])
 
         def plan(name, side, entry, stop, target, note, kind):
             risk = abs(entry - stop)
@@ -180,52 +181,90 @@ class IntradayRadarEngine(Engine):
                     "risk_reward": round(reward / risk, 2) if risk else None,
                     "note": note}
 
-        # With-trend setups are PRIMARY. A counter-trend fade is offered too —
-        # it's a separate intraday scalp (half size, quick exit) and does not
-        # touch the core position — but it's ranked below the with-trend plays
-        # because fighting the daily trend has a lower base rate.
-        trade_plans = []
+        # ONE SIDE OR NOTHING.
+        #
+        # This used to emit a long AND a short on every neutral day — "fade the
+        # top, fade the bottom" — which is not a call, it is a menu. Worse, the
+        # intraday ledger measured those two range fades directly and they are
+        # the WORST things this engine has ever produced: range_fade_short 25.9%
+        # net hit rate, -$6,269/lot; vwap_pullback_long 33.3%, -$8,041/lot. A
+        # two-sided output guarantees one of them is wrong and lets the other
+        # one look like it was the call all along.
+        #
+        # The rule now: emit AT MOST ONE plan, always on the side of the daily
+        # bias, and only when price is somewhere the plan can actually be taken.
+        # Neutral bias => no trade. Counter-trend fades are gone entirely.
+        # If nothing qualifies, say NO TRADE and mean it.
+        MIN_RR = 1.5
+        trade_plans: list[dict] = []
+        no_trade_reason = None
+
+        # Tolerance band around VWAP. A hard `last_px >= vwap` test made the
+        # whole day's call flip on two cents, which is the same brittleness as
+        # the confidence-tier size discontinuity already logged as a defect.
+        # Half an ATR either side of VWAP is "at the pullback zone" — and if
+        # anything, price just under VWAP in a bullish tape is a BETTER long
+        # location than price above it, not a disqualifying one.
+        vwap_zone = 0.5 * atr30
         if "bull" in bias:
-            trade_plans.append(plan(
-                "VWAP pullback long", "long", vwap, vwap - atr30,
-                max(sess_hi, vwap + 1.5 * atr30),
-                "With-trend, PRIMARY. Wait for price to come to VWAP; no chase.",
-                "with-trend"))
-            trade_plans.append(plan(
-                "Range breakout long", "long", sess_hi + 0.05,
-                sess_hi + 0.05 - atr30, sess_hi + 0.05 + 1.5 * atr30,
-                "With-trend, PRIMARY. Only on a 30m close above the session high.",
-                "with-trend"))
-            trade_plans.append(plan(
-                "Range-high fade short", "short", sess_hi, sess_hi + atr30, vwap,
-                "COUNTER-trend scalp, HALF size. Fade a rejection at the session "
-                "high back to VWAP; bail fast if it breaks out. Separate from the "
-                "core long.", "counter-trend"))
+            if last_px >= vwap - vwap_zone:
+                # Above VWAP in a bullish tape: the tradable location is a
+                # pullback INTO VWAP, which is below us and therefore waitable.
+                cand = plan(
+                    "VWAP pullback long", "long", vwap, vwap - atr30,
+                    max(sess_hi, vwap + 1.5 * atr30),
+                    "Wait for price to come back to VWAP. Do not chase. "
+                    "If it never comes to you, you do not trade today.",
+                    "with-trend")
+            elif last_px >= sess_hi - atr30:
+                cand = plan(
+                    "Range breakout long", "long", sess_hi + 0.05,
+                    sess_hi + 0.05 - atr30, sess_hi + 0.05 + 1.5 * atr30,
+                    "Only on a 30m CLOSE above the session high. A wick is "
+                    "not a close.", "with-trend")
+            else:
+                cand = None
+                no_trade_reason = (
+                    f"Daily bias is {bias} but price ({last_px:.2f}) is below "
+                    f"VWAP ({vwap:.2f}) and not near the session high. The tape "
+                    f"and the bias disagree — there is no long location here, "
+                    f"and the fix is not to short against the bias.")
         elif "bear" in bias:
-            trade_plans.append(plan(
-                "VWAP fade short", "short", vwap, vwap + atr30,
-                min(sess_lo, vwap - 1.5 * atr30),
-                "With-trend, PRIMARY. Wait for the bounce into VWAP.",
-                "with-trend"))
-            trade_plans.append(plan(
-                "Range breakdown short", "short", sess_lo - 0.05,
-                sess_lo - 0.05 + atr30, sess_lo - 0.05 - 1.5 * atr30,
-                "With-trend, PRIMARY. Only on a 30m close below the session low.",
-                "with-trend"))
-            trade_plans.append(plan(
-                "Range-low fade long", "long", sess_lo, sess_lo - atr30, vwap,
-                "COUNTER-trend scalp, HALF size. Fade a bounce off the session "
-                "low back to VWAP; quick exit. Separate from the core.",
-                "counter-trend"))
+            if last_px <= vwap + vwap_zone:
+                cand = plan(
+                    "VWAP fade short", "short", vwap, vwap + atr30,
+                    min(sess_lo, vwap - 1.5 * atr30),
+                    "Wait for the bounce into VWAP. Do not chase it down.",
+                    "with-trend")
+            elif last_px <= sess_lo + atr30:
+                cand = plan(
+                    "Range breakdown short", "short", sess_lo - 0.05,
+                    sess_lo - 0.05 + atr30, sess_lo - 0.05 - 1.5 * atr30,
+                    "Only on a 30m CLOSE below the session low. A wick is "
+                    "not a close.", "with-trend")
+            else:
+                cand = None
+                no_trade_reason = (
+                    f"Daily bias is {bias} but price ({last_px:.2f}) is above "
+                    f"VWAP ({vwap:.2f}) and not near the session low. The tape "
+                    f"and the bias disagree — no short location here.")
         else:
-            trade_plans.append(plan(
-                "Range fade short", "short", sess_hi, sess_hi + atr30, vwap,
-                "Neutral bias: fade the top of the range back to VWAP.",
-                "range-fade"))
-            trade_plans.append(plan(
-                "Range fade long", "long", sess_lo, sess_lo - atr30, vwap,
-                "Neutral bias: fade the bottom of the range back to VWAP.",
-                "range-fade"))
+            cand = None
+            no_trade_reason = (
+                "Daily bias is neutral. There is no side to be on. The old "
+                "behaviour here was to offer a fade at both extremes; the "
+                "intraday ledger says those fades lose money (range fade short: "
+                "25.9% hit, -$6,269/lot over 27 trades). No trade is the call.")
+
+        if cand is not None:
+            rr = cand.get("risk_reward")
+            if rr is not None and rr < MIN_RR:
+                no_trade_reason = (
+                    f"The only setup on the {bias} side is {cand['name']} at "
+                    f"R:R {rr}, below the {MIN_RR} minimum. A thin-reward trade "
+                    f"in a 56% -vol tape is a coin flip with costs attached.")
+            else:
+                trade_plans.append(cand)
 
         # -- day-trade stance & sleeve guidance -----------------------------------
         # The actionable call is trend-alignment + levels, NOT next-candle
@@ -235,22 +274,24 @@ class IntradayRadarEngine(Engine):
         # as a reason to sit out a with-trend setup.
         comp = load_artifact("composite_signal", require_success=True)
         daily_bias = comp["data"]["label"] if comp else "unknown"
-        if "bull" in daily_bias:
-            stance = "LONG bias · shorts = fades"
-            sleeve = (f"Primary: trade WITH the {daily_bias} daily trend (the long "
-                      f"setups). You CAN short intraday — but only as a "
-                      f"counter-trend fade at the session high, half size, quick "
-                      f"exit. It's a separate scalp; it does not touch the core long.")
-        elif "bear" in daily_bias:
-            stance = "SHORT bias · longs = fades"
-            sleeve = (f"Primary: trade WITH the {daily_bias} daily trend (the short "
-                      f"setups). Counter-trend longs are fades only at the session "
-                      f"low, half size, quick exit — separate from the core.")
+        if not trade_plans:
+            stance = "NO TRADE"
+            sleeve = ("NO TRADE TODAY. " + (no_trade_reason or "") +
+                      " Sitting out is a position — it is the one with a "
+                      "guaranteed zero cost drag, and this sleeve's measured "
+                      "cost drag is $79.74/bbl.")
+        elif trade_plans[0]["side"] == "long":
+            stance = "LONG only"
+            sleeve = (f"ONE setup, long only, on the {daily_bias} daily bias. "
+                      f"There is no short plan today and that is deliberate — "
+                      f"if this level fails, the answer is no trade, not the "
+                      f"other side.")
         else:
-            stance = "Two-sided (range)"
-            sleeve = ("No daily trend — fade the range extremes back to VWAP "
-                      "as below, smaller size. This is the regime to be picky "
-                      "or sit out the chop.")
+            stance = "SHORT only"
+            sleeve = (f"ONE setup, short only, on the {daily_bias} daily bias. "
+                      f"There is no long plan today and that is deliberate — "
+                      f"if this level fails, the answer is no trade, not the "
+                      f"other side.")
         # honest footnote about single-candle direction (informational only)
         candle_note = ("Heads-up: the next single 30m candle's direction is ~a "
                        "coin toss (true for any market) — your edge is the "
@@ -290,6 +331,7 @@ class IntradayRadarEngine(Engine):
             },
             "price_bands": price_bands,
             "trade_plans": trade_plans,
+            "no_trade_reason": no_trade_reason if not trade_plans else None,
             "daily_bias": daily_bias,
             "day_trade_stance": stance,
             "sleeve_guidance": sleeve,
@@ -335,11 +377,16 @@ def main() -> None:
           f"{pb['next_30m']['p50']} | p90 {pb['next_30m']['p90']}")
     print(f"    next 2h : p10 {pb['next_2h']['p10']} | p50 "
           f"{pb['next_2h']['p50']} | p90 {pb['next_2h']['p90']}")
-    print(f"  Trade plans ({d['daily_bias']} bias):")
-    for t in d["trade_plans"]:
+    if d["trade_plans"]:
+        t = d["trade_plans"][0]
+        print(f"  THE TRADE ({d['daily_bias']} bias) — one side, no alternative:")
         print(f"    {t['name']} [{t['side'].upper()}]: entry {t['entry']} "
               f"stop {t['stop']} target {t['target']} "
-              f"(R:R {t['risk_reward']}) — {t['note']}")
+              f"(R:R {t['risk_reward']})")
+        print(f"    {t['note']}")
+    else:
+        print(f"  NO TRADE ({d['daily_bias']} bias).")
+        print(f"    {d.get('no_trade_reason', '')}")
     print(f"  Sleeve: {d['sleeve_guidance']}")
     for w in result.warnings:
         print(f"  ⚠ {w}")

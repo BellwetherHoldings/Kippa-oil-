@@ -138,16 +138,24 @@ def build_daytrade_embed() -> dict[str, Any] | None:
     d = radar["data"]
     lv = d["levels"]
     stance = d.get("day_trade_stance", "—")
-    _tag = {"with-trend": "🟢 with-trend", "counter-trend": "🔻 fade (½ size)",
-            "range-fade": "🔸 range fade"}
-    plans = "\n".join(
-        f"{_tag.get(t.get('kind'), '')} **{t['name']}** [{t['side'].upper()}] "
-        f"E {t['entry']} / S {t['stop']} / T {t['target']} "
-        f"(R:R {t['risk_reward']})"
-        for t in d["trade_plans"])
+    # One plan or none. The engine no longer emits a long AND a short on the
+    # same day, so this renders a single call — or an explicit NO TRADE with
+    # the reason. A menu of both sides was never an alert, it was a hedge.
+    if d["trade_plans"]:
+        t = d["trade_plans"][0]
+        arrow = "🟩 LONG" if t["side"] == "long" else "🟥 SHORT"
+        plans = (f"{arrow} · **{t['name']}**\n"
+                 f"entry **{t['entry']}** · stop **{t['stop']}** · "
+                 f"target **{t['target']}** · R:R **{t['risk_reward']}**\n"
+                 f"_{t['note']}_")
+        plan_header = "▶ THE TRADE — one side, no alternative"
+    else:
+        plans = ("⬜ **NO TRADE**\n"
+                 + (d.get("no_trade_reason") or "No qualifying setup."))
+        plan_header = "▶ NO TRADE"
     # green for a directional (LONG/SHORT) stance, amber for range days
     color = 0x2ECC71 if "LONG" in stance else \
-            0xE74C3C if "SHORT" in stance else 0xF1C40F
+            0xE74C3C if "SHORT" in stance else 0x95A5A6
     tape = ("above VWAP — intraday firm" if lv["vs_vwap"] > 0
             else "below VWAP — intraday soft" if lv["vs_vwap"] < 0
             else "at VWAP — intraday flat")
@@ -158,7 +166,7 @@ def build_daytrade_embed() -> dict[str, Any] | None:
             {"name": "Intraday tape (short-term)",
              "value": f"px **${lv['last_price']}** {lv['vs_vwap']:+} vs VWAP "
                       f"— {tape}", "inline": False},
-            {"name": f"▶ Plan of attack ({d['daily_bias']} bias)",
+            {"name": f"{plan_header} ({d['daily_bias']} bias)",
              "value": plans, "inline": False},
             {"name": "Levels",
              "value": f"px **{lv['last_price']}** | VWAP {lv['session_vwap']} "
