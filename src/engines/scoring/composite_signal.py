@@ -26,6 +26,7 @@ Publishes:
 
 from __future__ import annotations
 
+import json
 import sys
 from datetime import date
 from pathlib import Path
@@ -113,6 +114,36 @@ def _label(score: float) -> str:
         if score <= threshold:
             return label
     return "strong bullish"
+
+
+
+def _previous_component_set() -> set[str] | None:
+    """
+    Component set from the most recent signal-log row, or None if there is no
+    usable history. Used to detect that the composite's basis changed between
+    runs — see the comparability guard in execute().
+    """
+    path = _REPO_ROOT / "data" / "signal_log.jsonl"
+    if not path.exists():
+        return None
+    last = None
+    try:
+        with path.open() as fh:
+            for line in fh:
+                line = line.strip()
+                if line:
+                    last = line
+        if last is None:
+            return None
+        comps = json.loads(last).get("components")
+    except (OSError, ValueError):
+        return None
+    if isinstance(comps, dict):
+        return set(comps)
+    if isinstance(comps, list):
+        out = {c.get("component") for c in comps if isinstance(c, dict)}
+        return {c for c in out if c} or None
+    return None
 
 
 class CompositeSignalEngine(Engine):
@@ -365,6 +396,38 @@ class CompositeSignalEngine(Engine):
             sum(weights[c] for c in missing_benchmark), 3
         )
 
+        # The comment above promised that a composition change would be
+        # announced. Until 2026-08-21 it was not: the check only looked at
+        # BENCHMARK_COMPONENTS (inventory alone), so a component appearing or
+        # vanishing anywhere else passed silently with comparable_to_history
+        # still reading true. That bit the same day macro_conditions came
+        # online and turned a 6-component composite into a 7-component one
+        # mid-series — every row in data/signal_log.jsonl before that point is
+        # a different statistic from every row after it.
+        prev_set = _previous_component_set()
+        composition_change = None
+        if prev_set is not None and prev_set != present:
+            added = sorted(present - prev_set)
+            removed = sorted(prev_set - present)
+            composition_change = {
+                "added": added,
+                "removed": removed,
+                "previous_count": len(prev_set),
+                "current_count": len(present),
+            }
+            bits = []
+            if added:
+                bits.append("added " + ", ".join(added))
+            if removed:
+                bits.append("removed " + ", ".join(removed))
+            warnings.append(
+                f"COMPOSITION CHANGE: {'; '.join(bits)} "
+                f"({len(prev_set)} → {len(present)} components). Scores before "
+                f"and after this run are different statistics sharing a name — "
+                f"do not compare them, and treat any backtest or ledger "
+                f"spanning this boundary as spanning a regime break."
+            )
+
         data = {
             "composite_score": round(float(score), 3),
             "label": _label(float(score)),
@@ -373,7 +436,9 @@ class CompositeSignalEngine(Engine):
             "degraded_vs_benchmark": bool(missing_benchmark),
             "missing_benchmark_components": missing_benchmark,
             "excluded_nominal_weight": excluded_weight,
-            "comparable_to_history": not missing_benchmark,
+            "comparable_to_history": not missing_benchmark
+                                     and composition_change is None,
+            "composition_change": composition_change,
             "components": components,
             "methodology": (
                 "score = Σ(weight × freshness_confidence × signal) / "

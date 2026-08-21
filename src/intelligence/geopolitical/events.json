@@ -239,7 +239,19 @@
       ],
       "update_log_0729": "07-29: the diplomatic read from 07-27/07-28 is INVALIDATED by events. Iran's own MFA had already denied negotiating with the US (only with Oman); the 07-28 missile salvo at a US base in Jordan settles it. The 'pause for talks' framing was Washington's, not a mutual process. Confidence cut 0.6 -> 0.4 and status held at monitoring. The Oman channel on the strait itself has not been reported dead - that is the only live thread.",
       "update_log_0730": "07-30: the talks track is effectively dead for now. Iran fired first on 07-28, the US completed a heavy retaliatory wave on 07-29, and Iran's MFA had already denied negotiating with Washington. Confidence cut 0.4 -> 0.25; status held at monitoring because the Oman channel on the strait has not been reported closed.",
-      "update_log_0803": "08-03: the diplomatic channel showed its first real sign of life since 07-27. Trump's stand-down was explicitly framed as a response to requests from Iran AND other Middle Eastern states, with the Saudi crown prince named as having raised concerns directly. That is regional mediation actually working on US behaviour, which is different in kind from the Oman-only track. Confidence raised 0.25 -> 0.40. Still not a settlement and still no reported US-Iran direct negotiation."
+      "update_log_0803": "08-03: the diplomatic channel showed its first real sign of life since 07-27. Trump's stand-down was explicitly framed as a response to requests from Iran AND other Middle Eastern states, with the Saudi crown prince named as having raised concerns directly. That is regional mediation actually working on US behaviour, which is different in kind from the Oman-only track. Confidence raised 0.25 -> 0.40. Still not a settlement and still no reported US-Iran direct negotiation.",
+      "instrument": {
+        "kind": "memorandum_of_understanding",
+        "name": "US-Iran 14-point MOU (Qatar/Oman track)",
+        "status": "expired",
+        "issued": "2026-06-17",
+        "stated_expiry": "2026-08-17",
+        "actual_end": "2026-08-17",
+        "superseded_by": null,
+        "last_verified": "2026-08-21",
+        "verified_against": "https://www.aljazeera.com/news/2026/8/16/us-iran-mou-is-set-to-expire-what-to-know",
+        "note": "Ran its full 60 days and lapsed on schedule with no extension. Unlike GL X, this one did reach its stated expiry - which is why the two must be recorded separately rather than assumed to behave the same way."
+      }
     },
     {
       "id": "cpc-black-sea-drone-disruption-2026",
@@ -391,7 +403,19 @@
         "https://www.squirepattonboggs.com/insights/publications/ofac-s-general-license-x-and-the-easing-of-iran-energy-sanctions/",
         "https://ofac.treasury.gov/recent-actions/20260622_33",
         "https://www.congress.gov/crs-product/IN12267"
-      ]
+      ],
+      "instrument": {
+        "kind": "general_license",
+        "name": "OFAC Iran General License X",
+        "status": "revoked",
+        "issued": "2026-06-21",
+        "stated_expiry": "2026-08-21",
+        "actual_end": "2026-07-07",
+        "superseded_by": "OFAC Iran General License X1 (wind-down, closed 2026-07-17)",
+        "last_verified": "2026-08-21",
+        "verified_against": "https://www.nortonrosefulbright.com/en/knowledge/publications/917bea3e/iran-oil-relief-ends-abruptly-as-ofac-orders-immediate-wind-down",
+        "note": "The gap between stated_expiry 2026-08-21 and actual_end 2026-07-07 is the error this field exists to prevent. I published the first date as a live countdown for five days."
+      }
     },
     {
       "id": "uae-iran-trade-severance-2026",
@@ -415,7 +439,19 @@
         "https://www.cnbc.com/2026/08/19/us-iran-war-trump-hormuz.html",
         "https://www.haaretz.com/middle-east-news/iran/2026-08-19/ty-article/uae-suspends-trade-with-iran-after-coming-under-renewed-missile-fire/000001a0-1aea-dfad-a3a1-bfef76850000",
         "https://www.aljazeera.com/news/2026/8/8/uae-says-iran-targeted-adnoc-tanker-in-hormuz-no-casualties-2"
-      ]
+      ],
+      "instrument": {
+        "kind": "state_trade_measure",
+        "name": "UAE suspension of all trade and financial transactions with Iran",
+        "status": "in_force",
+        "issued": "2026-08-19",
+        "stated_expiry": null,
+        "actual_end": null,
+        "superseded_by": null,
+        "last_verified": "2026-08-21",
+        "verified_against": "https://www.washingtonpost.com/business/2026/08/19/iran-united-arab-emirates-trade-august-19-2026/d3c57f1e-9bbc-11f1-9cc4-2dc9b46e2d5c_story.html",
+        "note": "Declared 'until further notice' - open-ended, so there is no expiry date to anchor on and the only guard is re-verification."
+      }
     }
   ],
   "chokepoint_status": [
@@ -817,6 +853,31 @@
       "chokepoint": "strait_of_hormuz",
       "observed_date": "2026-08-20",
       "ingested_via": "analyst_classification"
+    },
+    {
+      "strait_status": "partially_open",
+      "change_from_previous": "more_restrictive",
+      "estimated_shipping_capacity_percent": 58,
+      "commercial_shipping": "limited",
+      "military_risk": "high",
+      "insurance_risk": "high",
+      "expected_supply_impact": "bullish",
+      "confidence": 0.68,
+      "summary": "REFRESHED AFTER FIVE DAYS STALE. 62 -> 58, CONFIDENCE 0.62 -> 0.68. THE CUT AND THE CONFIDENCE RAISE MOVE IN OPPOSITE DIRECTIONS ON PURPOSE, AND HERE IS WHY: the old 62% was a general-traffic figure. I now have a TANKER-SPECIFIC number, which is the only one this platform should be using, because Bab el-Mandeb matters here as an oil route and not as a container route. NEW EVIDENCE, WEEK OF 08-10 TO 08-16: 223 AIS-enabled transits through the strait, described as broadly in line with levels recorded immediately after the Houthi naval blockade of Saudi Arabia was imposed - i.e. STABILISED AT A DEPRESSED LEVEL, not recovering and not deteriorating. Overall vessel traffic is down 24% from pre-blockade. BUT MAINSTREAM TANKER TRAFFIC FELL 42%, TO 53 TRANSITS IN THE WEEK FOLLOWING THE BLOCKADE. THE TWO MEASURES DISAGREE AND THE DISAGREEMENT IS THE POINT: -24% all vessels versus -42% tankers means the disruption is CONCENTRATED IN THE SECTOR THIS PLATFORM CARES ABOUT. Carrying the blended -24% number would have understated oil-route impairment by 18 percentage points. 58% is the tanker read. CONFIDENCE RAISED BECAUSE THE MEASURE IMPROVED, NOT BECAUSE THE SITUATION DID: I have replaced a five-day-old blended figure with a dated, sector-specific, source-attributed one. That is a genuine information gain even though the capacity number got worse. CONTRADICTORY EVIDENCE I AM NOT BURYING - CONTAINER TRAFFIC IS RECOVERING WHILE TANKERS ARE NOT: major carriers are progressively restoring Asia-Europe services via Suez, and containerships that had avoided the route since late 2023 have resumed Red Sea transits. If the strait were uniformly dangerous that would not be happening. The honest read is that the Houthi blockade is TARGETED - it is aimed at shipping linked to Saudi Arabia, not at all traffic - which is exactly why the tanker number and the all-vessel number diverge, and it means capacity here is a function of WHOSE CARGO IT IS rather than a single throughput percentage. A one-number capacity field cannot express that, and I am flagging the limitation rather than pretending 58% captures it. SUEZ IS ABSORBING THE DIVERTED CRUDE AND THIS CUTS AGAINST MY OWN BYPASS THESIS: Suez traffic hit its highest level in more than two years - roughly 1,090 transits and 88.6m dwt over four weeks, the most since January 2024 - with crude tankers boosting tonnage as VLCCs carrying Yanbu crude route via Suez rather than Bab el-Mandeb. I have been treating Petroline -> Yanbu -> Bab el-Mandeb as the Saudi escape route from Hormuz. The plain reading of this data is that those barrels are now going NORTH through Suez instead of SOUTH through Bab el-Mandeb, which preserves access to Europe and the Mediterranean but does NOT preserve access to ASIA, which is where Gulf crude normally goes. If that reading is right, the Saudi bypass is less of a substitute for Hormuz than I have been crediting, because it reaches the wrong customers. I am flagging this as a plain reading of one week of routing data, NOT as an established structural finding - I have not seen destination-level cargo data confirming it. SECURITY: elevated. Continued Houthi attacks and attempted strikes demonstrate both capability and intent against commercial shipping linked to Saudi Arabia. Jazan restart still scheduled 08-30 and already slipped once.",
+      "sources": [
+        "https://www.lloydslistintelligence.com/resources/blog/red-sea-brief-20-august-2026",
+        "https://www.lloydslistintelligence.com/resources/blog/red-sea-brief-13-august-2026",
+        "https://www.lloydslist.com/LL1158141/The-Week-in-Charts-Red-Sea-shipping-stabilises-after-Julys-Houthi-blockade-shock--War-disruption-and-rerouting-fail-to-derail-container-demand",
+        "https://www.japantimes.co.jp/news/2026/07/27/world/red-sea-shipping-houthi-saudi-arabia/",
+        "https://www.cnbc.com/2026/07/22/houthis-red-sea-bab-el-mandeb-saudi-oil-iran.html",
+        "https://www.aljazeera.com/news/2026/7/22/can-the-suez-save-asian-oil-consumers-after-houthis-shut-bab-al-mandeb"
+      ],
+      "chokepoint": "bab_el_mandeb",
+      "observed_date": "2026-08-21",
+      "ingested_via": "analyst_classification"
     }
-  ]
+  ],
+  "schema_notes": {
+    "instrument": "Optional block for any event whose premise rests on a dated external artefact: a licence, waiver, MOU, ceasefire, deadline or agreement. Fields: kind, name, status (in_force|revoked|expired|superseded|unknown), issued, stated_expiry, actual_end, superseded_by, last_verified, verified_against. stated_expiry is what the issuing document PLANNED. actual_end is what was OBSERVED. last_verified is the date the status was last confirmed against a source. Never publish a countdown to stated_expiry without re-checking that the instrument survived to reach it - that mistake was made on 2026-08-21 and this block exists to make it detectable."
+  }
 }

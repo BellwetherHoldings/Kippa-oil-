@@ -57,6 +57,80 @@ SCORING_STATUSES = {"active", "monitoring"}
 MONITORING_DISCOUNT = 0.5   # monitoring events count at half weight
 
 
+# --- dated-instrument verification -------------------------------------------
+#
+# On 2026-08-21 this platform published a five-day countdown to the expiry of
+# OFAC General License X. The licence had been REVOKED on 2026-07-07, six weeks
+# before the date being counted down to. Nothing in the registry caught it,
+# because the registry had no way to express the difference between
+#
+#     "this instrument expires on DATE"        (a plan, from its issuance doc)
+#     "this instrument still existed on DATE"  (an observation)
+#
+# An event may now carry an `instrument` block recording which external legal
+# artefact it hinges on and when that artefact was last CONFIRMED to still be
+# in force. The checks below refuse to let a stale or dead instrument sit
+# quietly underneath a high severity.
+INSTRUMENT_VERIFY_DAYS = 7
+INSTRUMENT_STATUSES = {"in_force", "revoked", "expired", "superseded", "unknown"}
+DEAD_STATUSES = {"revoked", "expired", "superseded"}
+# Categories whose scores usually rest on a dated external artefact.
+INSTRUMENT_EXPECTED_CATEGORIES = {"sanctions", "diplomatic_negotiation"}
+
+
+def _check_instrument(ev: dict[str, Any], today: date) -> list[str]:
+    """Warnings about the external instrument an event's premise rests on."""
+    out: list[str] = []
+    inst = ev.get("instrument")
+
+    if inst is None:
+        if ev.get("category") in INSTRUMENT_EXPECTED_CATEGORIES:
+            out.append(
+                f"Event {ev['id']} is a {ev['category']} event with no "
+                f"`instrument` block — nothing records whether the licence, "
+                f"waiver or agreement it rests on still exists. This is the "
+                f"exact gap that produced the 2026-08-21 GL X correction."
+            )
+        return out
+
+    name = inst.get("name", "unnamed instrument")
+    status = inst.get("status", "unknown")
+    if status not in INSTRUMENT_STATUSES:
+        out.append(f"Event {ev['id']}: instrument status {status!r} is not one "
+                   f"of {sorted(INSTRUMENT_STATUSES)}.")
+
+    verified = inst.get("last_verified")
+    if not verified:
+        out.append(f"Event {ev['id']}: {name} has never been verified — "
+                   f"`last_verified` is missing.")
+    else:
+        age = (today - date.fromisoformat(verified)).days
+        if age > INSTRUMENT_VERIFY_DAYS:
+            out.append(
+                f"Event {ev['id']}: {name} last CONFIRMED in force {age} days "
+                f"ago (limit {INSTRUMENT_VERIFY_DAYS}). Re-verify before any "
+                f"dated claim about it is published."
+            )
+
+    expiry = inst.get("stated_expiry")
+    if expiry and status == "in_force":
+        if date.fromisoformat(expiry) < today:
+            out.append(
+                f"Event {ev['id']}: {name} is marked in_force but its stated "
+                f"expiry {expiry} has passed — either it lapsed and the status "
+                f"is wrong, or it was extended and that is unrecorded."
+            )
+
+    if status in DEAD_STATUSES and ev.get("severity", 0) >= 7:
+        out.append(
+            f"Event {ev['id']}: {name} is {status} but severity is "
+            f"{ev['severity']}. A dead instrument should not carry a "
+            f"countdown-sized severity; check the score is pricing the "
+            f"ongoing regime and not an event that already happened."
+        )
+    return out
+
+
 def _risk_level(score: float) -> str:
     return classify(score, RISK_LEVELS)
 
@@ -161,6 +235,8 @@ class GeopoliticalIntelligenceEngine(Engine):
             else:
                 score = claimed
 
+            warnings.extend(_check_instrument(ev, today))
+
             staleness = (today - date.fromisoformat(ev["last_update"])).days
             if staleness > 7:
                 warnings.append(
@@ -183,6 +259,7 @@ class GeopoliticalIntelligenceEngine(Engine):
                 "confidence": ev["confidence"],
                 "last_update": ev["last_update"],
                 "days_since_update": staleness,
+                "instrument": ev.get("instrument"),
                 "summary": ev["description"][:200],
             })
             evidence.extend(ev["sources"])

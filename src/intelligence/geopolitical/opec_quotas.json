@@ -1,0 +1,39 @@
+{
+  "source_meeting": "2026-08-02 virtual meeting of the eight countries participating in the additional voluntary adjustments",
+  "applies_to_month": "2026-09",
+  "adjustment_kbd": 188,
+  "adjustment_basis": "additional voluntary adjustments announced April 2023",
+  "completes": "the full rollback of the 1.65 mb/d voluntary cut tranche",
+  "last_confirmed": "2026-08-21",
+  "note": "Six days running I flagged in the daily report that I did not have this split and would not invent one. This file closes that gap. The figures are the SEPTEMBER REQUIRED PRODUCTION levels - quotas, not deliveries. The delivery gap is tracked separately below and is the number that actually matters.",
+  "required_production_kbd": {
+    "saudi_arabia": 10478,
+    "russia": 9949,
+    "iraq": 4431,
+    "kuwait": 2676,
+    "kazakhstan": 1628,
+    "algeria": 1007,
+    "oman": 841
+  },
+  "total_required_kbd": 31010,
+  "delivery_gap": {
+    "as_of": "2026-06",
+    "group_shortfall_vs_target_kbd": 7510,
+    "scope": "broader OPEC+ group, not only the eight voluntary-adjustment countries",
+    "interpretation": "The shortfall exceeds the total output of every OPEC member except Saudi Arabia and Iraq. Members cannot fill the quotas they already hold, so a +188 kb/d paper increase is an accounting event rather than a supply event."
+  },
+  "spare_capacity": {
+    "assessment": "effective group spare capacity collapsed toward near-zero",
+    "detail": "Saudi Arabia holds the only meaningful theoretical buffer. Russia, Kazakhstan, Algeria and Oman all run near capacity.",
+    "caveat": "Several secondary sources frame this as 'post-UAE exit'. A UAE departure from OPEC+ is NOT confirmed and is not treated as established here."
+  },
+  "forward_guidance": "OPEC+ is considering pausing all further increases beyond September 2026; the hiking cycle that began post-closure ends there.",
+  "sources": [
+    "https://www.opec.org/pr-detail/1854611-2-august-2026.html",
+    "https://www.rigzone.com/news/opec_7_decide_to_boost_production_quota-03-aug-2026-184277-article/",
+    "https://www.cnbc.com/2026/08/02/opec-agrees-september-oil-hike-completing-rollback-of-voluntary-cuts.html",
+    "https://www.energyconnects.com/news/oil/2026/august/opecplus-completes-rollback-of-oil-production-cuts-with-september-hike/",
+    "https://tass.com/emergencies/2168137",
+    "https://www.enerdata.net/publications/daily-energy-news/opec-announces-increase-188-kbd-their-production-quotas.html"
+  ]
+}
