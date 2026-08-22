@@ -350,6 +350,47 @@ def _system_status(arg=None):
     print_board(_json.loads(path.read_text()))
 
 
+
+def _lucid_signal(arg=None):
+    """One CL trade or none, sized to survive Lucid's account rules."""
+    from src.engines.strategy import lucid
+    lucid.main(arg.split() if arg else [])
+
+
+def _lucid_rules(arg=None):
+    """Print the Lucid rule table this platform is sizing against."""
+    import json as _json
+    from src.engines.strategy.lucid import load_rules
+    r = load_rules()
+    v = r["_verification"]
+    print("Lucid Trading rules — as encoded in config/lucid_rules.json")
+    print("=" * 72)
+    print(f"  last verified {v['last_verified']} · confidence {v['confidence']}")
+    print(f"  ⚠ {v['caveat']}")
+    inst = r["instrument"]
+    print(f"\n  {inst['symbol']} {inst['contract_bbl']} bbl · "
+          f"${inst['tick_value_usd']}/tick · micro {inst['micro_symbol']} "
+          f"${inst['micro_tick_value_usd']}/tick")
+    print(f"  Flat by {r['session']['flat_by_local']} "
+          f"{r['session']['flat_by_tz']} · hedging: {r['universal']['hedging']}")
+    print(f"  Drawdown: {r['universal']['drawdown_trails']}")
+    print(f"  Locks at: {r['universal']['drawdown_locks_at']}")
+    for plan, spec in r["plans"].items():
+        ce, cf = spec.get("consistency_eval"), spec.get("consistency_funded")
+        print(f"\n  {plan} — consistency eval "
+              f"{f'{ce:.0%}' if ce else 'none'} / funded "
+              f"{f'{cf:.0%}' if cf else 'none'} · DLL {spec['dll_type']}")
+        print(f"    {'size':>8} {'target':>8} {'maxloss':>8} {'DLL':>7} {'minis':>6}")
+        for size, sz in spec["sizes"].items():
+            tgt = sz.get("profit_target") or sz.get("profit_target_first")
+            dll = sz.get("daily_loss")
+            print(f"    {int(size):>8,} {tgt:>8,} {sz['max_loss']:>8,} "
+                  f"{(f'{dll:,}' if dll else '—'):>7} {sz['max_minis']:>6}")
+    print("\n  Unresolved conflicts in the source material:")
+    for c in r["_conflicts_not_resolved"]:
+        print(f"    · {c}")
+
+
 COMMANDS = {
     ("data", "pull"): _data_pull,
     ("data", "quality"): _data_quality,
@@ -361,6 +402,8 @@ COMMANDS = {
     ("backtest", "sim"): _backtest_sim,
     ("backtest", "gates"): _backtest_gates,
     ("backtest", "intraday"): _backtest_intraday,
+    ("lucid", "signal"): _lucid_signal,
+    ("lucid", "rules"): _lucid_rules,
     ("geo", "status"): _geo_status,
     ("geo", "strait"): _geo_strait,
     ("supply", "status"): _supply_status,
@@ -409,6 +452,7 @@ JSON_ARTIFACTS = {
     ("backtest", "replay"): "replay_report",
     ("backtest", "sim"): "sim_trades",
     ("backtest", "gates"): "gate_sweep",
+    ("lucid", "signal"): "lucid_signal",
     ("backtest", "intraday"): "intraday_sim",
     ("forecast", "show"): "price_forecast",
     ("sim", "run"): "simulation_results",
