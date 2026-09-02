@@ -1,0 +1,502 @@
+"""
+Oil Intelligence Platform CLI — oil <module> <command> [arg]
+
+Governed by docs/016_CLI.md. Commands:
+
+    oil data pull          Refresh EIA inventories + WTI prices
+    oil data quality       Validation + lineage report for every dataset
+    oil signal run         Full pipeline: data → engines → composite
+                           → risk → confidence → forecast → sim → strategy
+    oil signal show        Composite from existing data (no re-pull)
+    oil geo status         Geopolitical risk assessment
+    oil geo strait [file]  Chokepoint shipping status; ingest a classification
+    oil supply status      Supply chain stress assessment
+    oil sentiment show     CFTC institutional positioning
+    oil macro show         FRED macroeconomic conditions
+    oil risk status        Platform risk assessment
+    oil confidence show    Confidence grade of the latest composite
+    oil backtest run       Historical validation of the signals
+    oil forecast show      4-week WTI fundamentals forecast
+    oil sim run            Monte Carlo scenarios (Hormuz overlays)
+    oil strategy show      Positioning recommendation from the full stack
+    oil monitor status     Platform health, freshness, alerts
+    oil obs report         Engine telemetry from the run log
+    oil auto run <name>    Run a workflow from config/workflows.json
+    oil security audit     Secrets hygiene scan of tracked files
+    oil deploy check       Release-readiness gate (audit + tests + env)
+    oil api serve          Start the API on 127.0.0.1:8000
+    oil system run [full]  Run every doc's engine (full = re-pull data first)
+    oil watch run [mins]   Continuous mode: cycle + Discord post every N min
+    oil discord test       Post the current read to Discord once
+    oil daytrade on|off    Toggle day-trade mode (intraday radar in the
+                           30-min Discord feed); 'status' to check
+    oil intraday show      Run the 30m candle radar once
+    oil pnl show           Track record: open/closed trades marked to market
+    oil model policy       Show which AI model each job uses, and why
+    oil model for <job>    Print the model id for one job
+    oil discord test       Post the current read to Discord once
+    oil discord report <p> Upload a report file to Discord
+    oil reports index      Rebuild reports/INDEX.md (the archive catalogue)
+    oil system status      Last full-system board
+
+Usage:
+    python src/cli/oil.py <module> <command> [arg]
+"""
+
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+
+def _data_pull(arg=None):
+    from src.data import eia_client
+    eia_client.main()
+    from src.data import live_prices
+    live_prices.main()
+
+
+def _data_quality(arg=None):
+    from src.data import quality
+    quality.main()
+
+
+def _signal_show(arg=None):
+    from src.engines.scoring import inventory_surprise
+    inventory_surprise.main()
+    print()
+    from src.engines.scoring import composite_signal
+    composite_signal.main()
+
+
+def _signal_run(arg=None):
+    _data_pull()
+    print()
+    _data_quality()      # invariant #1: data quality comes before analysis
+    print()
+    _signal_show()
+    print()
+    _risk_status()
+    print()
+    _confidence_show()
+    print()
+    _forecast_show()
+    print()
+    _sim_run()
+    print()
+    _strategy_show()
+    print()
+    _monitor_status()
+
+
+def _geo_status(arg=None):
+    from src.intelligence.geopolitical import engine
+    engine.main()
+
+
+def _geo_strait(arg=None):
+    """Show the chokepoint status board, or ingest a classification JSON."""
+    import json as _json
+    from src.intelligence.geopolitical import strait_status
+    if not arg:
+        print(strait_status.describe())
+        return
+    path = Path(arg)
+    if not path.exists():
+        raise SystemExit(f"file not found: {arg}")
+    obj = _json.loads(path.read_text())
+    # The registry tracks seven chokepoints; let the classification say which
+    # one it describes instead of silently filing everything under Hormuz.
+    chokepoint = obj.pop("chokepoint", "strait_of_hormuz")
+    warns = strait_status.ingest(obj, chokepoint=chokepoint)
+    print(f"✓ Ingested {obj['strait_status']} "
+          f"({obj['estimated_shipping_capacity_percent']}% capacity) "
+          f"for {chokepoint}.")
+    for w in warns:
+        print(f"  ⚠ {w}")
+    print("\nRe-run `oil geo status` to see the damped risk score.")
+
+
+def _supply_status(arg=None):
+    from src.intelligence.supply_chain import engine
+    engine.main()
+
+
+def _sentiment_show(arg=None):
+    from src.intelligence.market_sentiment import engine
+    engine.main()
+
+
+def _macro_show(arg=None):
+    from src.intelligence.macroeconomic import engine
+    engine.main()
+
+
+def _risk_status(arg=None):
+    from src.engines.risk import engine
+    engine.main()
+
+
+def _confidence_show(arg=None):
+    from src.engines.confidence import engine
+    engine.main()
+
+
+def _backtest_run(arg=None):
+    from src.engines.backtesting import engine
+    engine.main()
+
+
+def _signal_log(arg=None):
+    from src.engines.backtesting import signal_log
+    signal_log.main()
+
+
+def _signal_logstats(arg=None):
+    import json as _json
+    from src.engines.backtesting.signal_log import stats
+    print(_json.dumps(stats(), indent=2))
+
+
+def _backtest_replay(arg=None):
+    from src.engines.backtesting import replay
+    replay.main([arg] if arg else [])
+
+
+def _backtest_gates(arg=None):
+    """Sweep the entry gate against the replay panel, not the live log."""
+    from src.engines.backtesting import gate_sweep
+    gate_sweep.main([arg] if arg else [])
+
+
+def _backtest_intraday(arg=None):
+    """Simulated ledger for the day-trade signals, kept separate from daily."""
+    from src.engines.backtesting import intraday_sim
+    intraday_sim.main([arg] if arg else [])
+
+
+def _backtest_sim(arg=None):
+    from src.engines.backtesting import sim_ledger
+    sim_ledger.main([arg] if arg else [])
+
+
+def _forecast_show(arg=None):
+    from src.engines.forecast import engine
+    engine.main()
+
+
+def _sim_run(arg=None):
+    from src.engines.simulation import engine
+    engine.main()
+
+
+def _strategy_show(arg=None):
+    from src.engines.strategy import engine
+    engine.main()
+
+
+def _monitor_status(arg=None):
+    from src.monitoring import engine
+    engine.main()
+
+
+def _obs_report(arg=None):
+    from src.observability import report
+    report.main()
+
+
+def _auto_run(arg=None):
+    from src.engines.automation import runner
+    runner.main([arg] if arg else [])
+
+
+def _security_audit(arg=None):
+    from src.security import engine
+    engine.main()          # runs the audit AND publishes the artifact
+
+
+def _deploy_check(arg=None):
+    import os
+    import subprocess
+
+    from dotenv import load_dotenv
+
+    from src.security.audit import run_audit
+
+    load_dotenv(_REPO_ROOT / ".env")
+    print("Deploy Check — release readiness")
+    print("=" * 60)
+    failures = 0
+
+    for var in ("EIA_API_KEY", "FRED_API_KEY", "PLATFORM_API_KEYS"):
+        ok = bool(os.getenv(var))
+        print(f"  {'✓' if ok else '✗'} env: {var} "
+              f"{'present' if ok else 'MISSING'}")
+        failures += not ok
+
+    audit_report = run_audit()
+    ok = audit_report["status"] == "pass"
+    print(f"  {'✓' if ok else '✗'} security audit: {audit_report['status']} "
+          f"({audit_report['tracked_files_scanned']} files)")
+    failures += not ok
+
+    proc = subprocess.run(
+        [sys.executable, "-m", "pytest", "-q", "--no-header", "tests/"],
+        cwd=_REPO_ROOT, capture_output=True, text=True,
+    )
+    last = proc.stdout.strip().splitlines()[-1] if proc.stdout.strip() else "?"
+    print(f"  {'✓' if proc.returncode == 0 else '✗'} tests: {last}")
+    failures += proc.returncode != 0
+
+    data_dir = _REPO_ROOT / "data"
+    writable = os.access(data_dir, os.W_OK) if data_dir.exists() else False
+    print(f"  {'✓' if writable else '✗'} data/ writable")
+    failures += not writable
+
+    print(f"\n  {'✓ READY' if failures == 0 else f'✗ NOT READY — {failures} gate(s) failed'}")
+    if failures:
+        raise SystemExit(1)
+
+
+def _api_serve(arg=None):
+    import uvicorn
+    uvicorn.run("src.api.app:app", host="127.0.0.1", port=8000)
+
+
+def _watch_run(arg=None):
+    from src.engines.automation import watch
+    watch.main([arg] if arg else [])
+
+
+def _discord_test(arg=None):
+    from src.engines.automation import notify
+    notify.main()
+
+
+def _discord_report(arg=None):
+    if not arg:
+        raise SystemExit("usage: oil discord report <path-to-report.md>")
+    from src.engines.automation.notify import send_discord_report
+    send_discord_report(arg)
+    print(f"✓ Uploaded {arg} to Discord.")
+
+
+def _pnl_show(arg=None):
+    from src.engines.pnl import engine
+    engine.main()
+
+
+def _discord_pnl(arg=None):
+    from src.engines.pnl.engine import PnLEngine
+    PnLEngine().run()                     # refresh the artifact first
+    from src.engines.automation.notify import send_discord_pnl
+    send_discord_pnl(content=arg or "📈 **Track record** (paper, off the signal)")
+    print("✓ Pushed the track record to Discord.")
+
+
+def _reports_index(arg=None):
+    from src.engines.automation import reports_index
+    reports_index.main()
+
+
+def _daytrade(arg=None):
+    import json
+    path = _REPO_ROOT / "config" / "daytrade.json"
+    cfg = json.loads(path.read_text())
+    if arg in ("on", "off"):
+        cfg["enabled"] = arg == "on"
+        path.write_text(json.dumps(cfg, indent=2) + "\n")
+    state = "ON" if cfg["enabled"] else "OFF"
+    print(f"Day-trade mode: {state}")
+    if cfg["enabled"]:
+        print("  Watch cycles now include the intraday radar embed.")
+        print("  The radar reports MEASURED candle stats — when the edge is a")
+        print("  coin flip it says so and gives you levels, not fairy tales.")
+
+
+def _intraday_show(arg=None):
+    from src.engines.analytics import intraday
+    intraday.main()
+
+
+def _model_policy(arg=None):
+    from src.engines.automation import model_policy
+    model_policy.main([])
+
+
+def _model_for(arg=None):
+    from src.engines.automation import model_policy
+    if not arg:
+        raise SystemExit("usage: oil model for <job>")
+    model_policy.main([arg])
+
+
+def _system_run(arg=None):
+    from src.engines.registry import print_board, run_full_system
+    print_board(run_full_system(pull_data=(arg == "full")))
+
+
+def _system_status(arg=None):
+    import json as _json
+    path = _REPO_ROOT / "data" / "system_run.json"
+    if not path.exists():
+        raise SystemExit("No system run recorded — run: oil system run")
+    from src.engines.registry import print_board
+    print_board(_json.loads(path.read_text()))
+
+
+
+def _lucid_signal(arg=None):
+    """One CL trade or none, sized to survive Lucid's account rules."""
+    from src.engines.strategy import lucid
+    lucid.main(arg.split() if arg else [])
+
+
+def _lucid_rules(arg=None):
+    """Print the Lucid rule table this platform is sizing against."""
+    import json as _json
+    from src.engines.strategy.lucid import load_rules
+    r = load_rules()
+    v = r["_verification"]
+    print("Lucid Trading rules — as encoded in config/lucid_rules.json")
+    print("=" * 72)
+    print(f"  last verified {v['last_verified']} · confidence {v['confidence']}")
+    print(f"  ⚠ {v['caveat']}")
+    inst = r["instrument"]
+    print(f"\n  {inst['symbol']} {inst['contract_bbl']} bbl · "
+          f"${inst['tick_value_usd']}/tick · micro {inst['micro_symbol']} "
+          f"${inst['micro_tick_value_usd']}/tick")
+    print(f"  Flat by {r['session']['flat_by_local']} "
+          f"{r['session']['flat_by_tz']} · hedging: {r['universal']['hedging']}")
+    print(f"  Drawdown: {r['universal']['drawdown_trails']}")
+    print(f"  Locks at: {r['universal']['drawdown_locks_at']}")
+    for plan, spec in r["plans"].items():
+        ce, cf = spec.get("consistency_eval"), spec.get("consistency_funded")
+        print(f"\n  {plan} — consistency eval "
+              f"{f'{ce:.0%}' if ce else 'none'} / funded "
+              f"{f'{cf:.0%}' if cf else 'none'} · DLL {spec['dll_type']}")
+        print(f"    {'size':>8} {'target':>8} {'maxloss':>8} {'DLL':>7} {'minis':>6}")
+        for size, sz in spec["sizes"].items():
+            tgt = sz.get("profit_target") or sz.get("profit_target_first")
+            dll = sz.get("daily_loss")
+            print(f"    {int(size):>8,} {tgt:>8,} {sz['max_loss']:>8,} "
+                  f"{(f'{dll:,}' if dll else '—'):>7} {sz['max_minis']:>6}")
+    print("\n  Unresolved conflicts in the source material:")
+    for c in r["_conflicts_not_resolved"]:
+        print(f"    · {c}")
+
+
+COMMANDS = {
+    ("data", "pull"): _data_pull,
+    ("data", "quality"): _data_quality,
+    ("signal", "run"): _signal_run,
+    ("signal", "show"): _signal_show,
+    ("signal", "log"): _signal_log,
+    ("signal", "logstats"): _signal_logstats,
+    ("backtest", "replay"): _backtest_replay,
+    ("backtest", "sim"): _backtest_sim,
+    ("backtest", "gates"): _backtest_gates,
+    ("backtest", "intraday"): _backtest_intraday,
+    ("lucid", "signal"): _lucid_signal,
+    ("lucid", "rules"): _lucid_rules,
+    ("geo", "status"): _geo_status,
+    ("geo", "strait"): _geo_strait,
+    ("supply", "status"): _supply_status,
+    ("sentiment", "show"): _sentiment_show,
+    ("macro", "show"): _macro_show,
+    ("risk", "status"): _risk_status,
+    ("confidence", "show"): _confidence_show,
+    ("backtest", "run"): _backtest_run,
+    ("forecast", "show"): _forecast_show,
+    ("sim", "run"): _sim_run,
+    ("strategy", "show"): _strategy_show,
+    ("monitor", "status"): _monitor_status,
+    ("obs", "report"): _obs_report,
+    ("auto", "run"): _auto_run,
+    ("security", "audit"): _security_audit,
+    ("deploy", "check"): _deploy_check,
+    ("api", "serve"): _api_serve,
+    ("system", "run"): _system_run,
+    ("watch", "run"): _watch_run,
+    ("discord", "test"): _discord_test,
+    ("daytrade", "on"): lambda arg=None: _daytrade("on"),
+    ("daytrade", "off"): lambda arg=None: _daytrade("off"),
+    ("daytrade", "status"): lambda arg=None: _daytrade(None),
+    ("intraday", "show"): _intraday_show,
+    ("pnl", "show"): _pnl_show,
+    ("model", "policy"): _model_policy,
+    ("model", "for"): _model_for,
+    ("discord", "report"): _discord_report,
+    ("discord", "pnl"): _discord_pnl,
+    ("reports", "index"): _reports_index,
+    ("system", "status"): _system_status,
+}
+
+
+# artifact backing each read command, for --json output (doc 016: output
+# formats beyond human-readable tables)
+JSON_ARTIFACTS = {
+    ("signal", "show"): "composite_signal",
+    ("geo", "status"): "geopolitical_risk",
+    ("supply", "status"): "supply_chain_stress",
+    ("sentiment", "show"): "market_sentiment",
+    ("macro", "show"): "macro_conditions",
+    ("risk", "status"): "risk_assessment",
+    ("confidence", "show"): "signal_confidence",
+    ("backtest", "run"): "backtest_report",
+    ("backtest", "replay"): "replay_report",
+    ("backtest", "sim"): "sim_trades",
+    ("backtest", "gates"): "gate_sweep",
+    ("lucid", "signal"): "lucid_signal",
+    ("backtest", "intraday"): "intraday_sim",
+    ("forecast", "show"): "price_forecast",
+    ("sim", "run"): "simulation_results",
+    ("strategy", "show"): "strategy_recommendation",
+    ("monitor", "status"): "monitoring_report",
+    ("data", "quality"): "data_quality_report",
+    ("pnl", "show"): "pnl_summary",
+}
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        prog="oil",
+        description="Oil Intelligence Platform CLI (docs/016_CLI.md)",
+    )
+    parser.add_argument("module")
+    parser.add_argument("command")
+    parser.add_argument("arg", nargs="?", default=None)
+    parser.add_argument("--json", action="store_true",
+                        help="print the command's published artifact as JSON "
+                             "instead of the human-readable view")
+    args = parser.parse_args(argv)
+
+    handler = COMMANDS.get((args.module, args.command))
+    if handler is None:
+        valid = "\n  ".join(f"oil {m} {c}" for m, c in sorted(COMMANDS))
+        parser.error(f"unknown command '{args.module} {args.command}'. "
+                     f"Valid:\n  {valid}")
+
+    if args.json:
+        artifact = JSON_ARTIFACTS.get((args.module, args.command))
+        if artifact is None:
+            parser.error(f"--json not supported for "
+                         f"'{args.module} {args.command}'")
+        path = _REPO_ROOT / "data" / f"{artifact}.json"
+        if not path.exists():
+            parser.error(f"{artifact} not published yet — run the command "
+                         f"without --json first")
+        print(path.read_text())
+        return 0
+
+    handler(args.arg)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

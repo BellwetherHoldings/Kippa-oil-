@@ -1,0 +1,4 @@
+{
+  "_schema": "Day-trade mode toggle. When enabled, every watch cycle also runs the intraday radar and posts the Day-Trade Radar embed to Discord.",
+  "enabled": true
+}

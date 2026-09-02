@@ -1,0 +1,345 @@
+"""
+Discord Notifier — pushes the platform's market read to a Discord channel.
+
+Governed by docs/013_Automation.md (notification system). Reads the
+published artifacts and posts a rich embed via a Discord webhook. The
+webhook URL is a secret: it lives in .env (DISCORD_WEBHOOK_URL), is never
+logged, and errors are sanitized so it cannot leak into tracebacks.
+
+Setup:
+    Discord → Server Settings → Integrations → Webhooks → New Webhook
+    → pick the channel → Copy Webhook URL → add to .env:
+        DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
+
+Usage:
+    python src/engines/automation/notify.py          (send one update now)
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+import requests
+from dotenv import load_dotenv
+
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
+from src.engines.base import DATA_DIR, load_artifact
+
+load_dotenv(_REPO_ROOT / ".env")
+
+COLOR = {"bullish": 0x2ECC71, "strong bullish": 0x1E8449,
+         "neutral": 0x95A5A6,
+         "bearish": 0xE74C3C, "strong bearish": 0x922B21}
+
+
+def build_embed() -> dict[str, Any]:
+    """Discord embed from the latest published artifacts."""
+    comp = load_artifact("composite_signal", require_success=True)
+    if comp is None:
+        raise RuntimeError("No composite artifact — run the pipeline first.")
+    cd = comp["data"]
+
+    risk = load_artifact("risk_assessment", require_success=True)
+    conf = load_artifact("signal_confidence", require_success=True)
+    strat = load_artifact("strategy_recommendation", require_success=True)
+    momo = load_artifact("price_momentum", require_success=True)
+    geo = load_artifact("geopolitical_risk", require_success=True)
+
+    fields = []
+    if momo:
+        m = momo["data"]
+        fields.append({"name": "WTI (live)",
+                       "value": f"${m['last_close']:.2f}  "
+                                f"(5d {m['return_5d']:+.1%})",
+                       "inline": True})
+    if conf:
+        c = conf["data"]
+        fields.append({"name": "Confidence",
+                       "value": f"{c['confidence_score']}/100 "
+                                f"({c['confidence_tier']}) → "
+                                f"{c['interpretation']}",
+                       "inline": True})
+    if risk:
+        r = risk["data"]
+        fields.append({"name": "Risk",
+                       "value": f"{r['overall_risk_score']}/100 "
+                                f"({r['overall_risk_level']}, "
+                                f"top: {r['top_risk']})",
+                       "inline": True})
+    if strat:
+        s = strat["data"]["stance"]
+        fields.append({"name": "Strategy",
+                       "value": f"**{s['direction'].upper()}** @ "
+                                f"{s['suggested_size_0_1']:.0%} size, "
+                                f"{s['horizon_days']}d horizon",
+                       "inline": True})
+    if geo:
+        g = geo["data"]
+        fields.append({"name": "Geopolitical",
+                       "value": f"{g['risk_score']}/100 ({g['risk_level']}) — "
+                                f"{', '.join(g['chokepoints_disrupted']) or 'no chokepoints hit'}",
+                       "inline": True})
+
+    # Intraday tape (from the 30m radar) — the short-term direction the
+    # multi-week composite deliberately does NOT track. Surfacing it here
+    # so "BULLISH" is never mistaken for an intraday call when the live
+    # tape is sliding.
+    radar = load_artifact("intraday_radar", require_success=True)
+    if radar:
+        lv = radar["data"]["levels"]
+        tape = ("above VWAP (intraday firm)" if lv["vs_vwap"] > 0
+                else "below VWAP (intraday soft)")
+        fields.append({"name": "Intraday tape (short-term)",
+                       "value": f"px **${lv['last_price']}** {lv['vs_vwap']:+} "
+                                f"vs VWAP — {tape}\n"
+                                f"session {lv['session_low']}–"
+                                f"{lv['session_high']}",
+                       "inline": True})
+
+    top = sorted(cd["components"], key=lambda c: c["effective_weight"],
+                 reverse=True)[:3]
+    fields.append({
+        "name": "Top signal drivers",
+        "value": "\n".join(f"• {c['component']}: {c['signal']:+.2f} "
+                           f"({c['as_of']})" for c in top),
+        "inline": False,
+    })
+
+    return {
+        "title": f"Kippa Oil Intelligence — {cd['label'].upper()} "
+                 f"{cd['composite_score']:+.2f} · multi-week",
+        "color": COLOR.get(cd["label"], 0x95A5A6),
+        "fields": fields,
+        "footer": {"text": "Multi-week fundamental signal (weeks, not hours) — "
+                           "for intraday direction use the Day-Trade Radar · "
+                           "not financial advice"},
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def build_daytrade_embed() -> dict[str, Any] | None:
+    """Compact Day-Trade Radar embed; None if no radar artifact.
+
+    Leads with the actionable with-trend stance and the trade plans. The
+    (honestly unpredictable) next-candle direction is a small footer note,
+    not the headline — so the radar guides trades instead of scaring you
+    off good with-trend setups.
+    """
+    radar = load_artifact("intraday_radar", require_success=True)
+    if radar is None:
+        return None
+    d = radar["data"]
+    lv = d["levels"]
+    stance = d.get("day_trade_stance", "—")
+    # One plan or none. The engine no longer emits a long AND a short on the
+    # same day, so this renders a single call — or an explicit NO TRADE with
+    # the reason. A menu of both sides was never an alert, it was a hedge.
+    if d["trade_plans"]:
+        t = d["trade_plans"][0]
+        arrow = "🟩 LONG" if t["side"] == "long" else "🟥 SHORT"
+        plans = (f"{arrow} · **{t['name']}**\n"
+                 f"entry **{t['entry']}** · stop **{t['stop']}** · "
+                 f"target **{t['target']}** · R:R **{t['risk_reward']}**\n"
+                 f"_{t['note']}_")
+        plan_header = "▶ THE TRADE — one side, no alternative"
+    else:
+        plans = ("⬜ **NO TRADE**\n"
+                 + (d.get("no_trade_reason") or "No qualifying setup."))
+        plan_header = "▶ NO TRADE"
+    # green for a directional (LONG/SHORT) stance, amber for range days
+    color = 0x2ECC71 if "LONG" in stance else \
+            0xE74C3C if "SHORT" in stance else 0x95A5A6
+    tape = ("above VWAP — intraday firm" if lv["vs_vwap"] > 0
+            else "below VWAP — intraday soft" if lv["vs_vwap"] < 0
+            else "at VWAP — intraday flat")
+    return {
+        "title": f"Day-Trade Radar — CL=F 30m · {stance}",
+        "color": color,
+        "fields": [
+            {"name": "Intraday tape (short-term)",
+             "value": f"px **${lv['last_price']}** {lv['vs_vwap']:+} vs VWAP "
+                      f"— {tape}", "inline": False},
+            {"name": f"{plan_header} ({d['daily_bias']} bias)",
+             "value": plans, "inline": False},
+            {"name": "Levels",
+             "value": f"px **{lv['last_price']}** | VWAP {lv['session_vwap']} "
+                      f"({lv['vs_vwap']:+}) \nH {lv['session_high']} / "
+                      f"L {lv['session_low']} | ATR30 {lv['atr_30m']}",
+             "inline": True},
+            {"name": "Price bands (80% inside p10–p90)",
+             "value": f"30m: {d['price_bands']['next_30m']['p10']} – "
+                      f"{d['price_bands']['next_30m']['p90']}\n"
+                      f"2h: {d['price_bands']['next_2h']['p10']} – "
+                      f"{d['price_bands']['next_2h']['p90']}",
+             "inline": True},
+            {"name": "How to play it", "value": d["sleeve_guidance"],
+             "inline": False},
+        ],
+        "footer": {"text": d.get("candle_note", "") + " · not financial advice"},
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def build_pnl_embed() -> dict[str, Any] | None:
+    """Track-record embed from the published pnl_summary artifact."""
+    pnl = load_artifact("pnl_summary", require_success=True)
+    if pnl is None:
+        return None
+    d = pnl["data"]
+    rec = d["record_closed"]
+    wr = (f" ({d['win_rate_closed']:.0%})"
+          if d.get("win_rate_closed") is not None else "")
+    lines = []
+    for r in d["trades"]:
+        if r["status"] != "open":
+            continue
+        usd = f" (${r['pnl_usd']:+,.0f})" if r["pnl_usd"] is not None else ""
+        lines.append(f"{r['side'].upper()} @ ${r['entry_price']:.2f} → "
+                     f"${r['mark_or_exit']:.2f}  **{r['pnl_pct']:+.2%}**{usd}")
+    fields = [
+        {"name": "Record (closed)", "value": f"{rec}{wr}", "inline": True},
+        {"name": "Open",
+         "value": f"{d['open_count']} ({d['open_winners']} green / "
+                  f"{d['open_losers']} red)", "inline": True},
+        {"name": "Mark",
+         "value": f"${d['as_of_mark']:.2f} ({d['mark_date']})", "inline": True},
+    ]
+    if lines:
+        fields.append({"name": "Open positions",
+                       "value": "\n".join(lines), "inline": False})
+    acct_lines = []
+    for a in d.get("accounts", []):
+        ret = (f"{a['total_return_pct']:+.0%} ({a['multiple']}x)"
+               if a.get("total_return_pct") is not None else "")
+        wk = (f" · +{a['week_return_pct']:.0%} wk"
+              if a.get("week_return_pct") is not None else "")
+        # honesty tag: trade-verified vs self-reported
+        tag = "" if a.get("verified", True) else "  _(self-reported)_"
+        if a.get("deposit"):
+            line = (f"**{a['owner']}**: ${a['deposit']:,.0f} → "
+                    f"${a['current_equity']:,.0f}  {ret}{wk}")
+        else:
+            line = (f"**{a['owner']}**: ${a['current_equity']:,.0f} "
+                    f"({a['broker'] or 'paper'})")
+        acct_lines.append(line + tag)
+    if acct_lines:
+        fields.append({"name": "Account equity (paper)",
+                       "value": "\n".join(acct_lines), "inline": False})
+    return {
+        "title": f"Track Record — {d['account_mode'].upper()}"
+                 + (f" · testing to {d['testing_until']}"
+                    if d.get("testing_until") else ""),
+        "color": 0x2ECC71 if d["open_losers"] == 0 else 0xE67E22,
+        "fields": fields,
+        "footer": {"text": "Paper track record · marks to the platform WTI "
+                           "feed · not financial advice"},
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def send_discord_update(content: str | None = None) -> bool:
+    """Post the current market read. Returns True on success."""
+    url = os.getenv("DISCORD_WEBHOOK_URL", "").strip()
+    if not url:
+        raise RuntimeError(
+            "DISCORD_WEBHOOK_URL not set in .env — create a webhook in "
+            "Discord (Server Settings → Integrations → Webhooks) and add it.")
+
+    import json as _json
+    embeds = [build_embed()]
+    mode_path = _REPO_ROOT / "config" / "daytrade.json"
+    if mode_path.exists() and _json.loads(mode_path.read_text()).get("enabled"):
+        dt = build_daytrade_embed()
+        if dt:
+            embeds.append(dt)
+    pnl = build_pnl_embed()
+    if pnl:
+        embeds.append(pnl)
+    payload: dict[str, Any] = {"embeds": embeds,
+                               "username": "Kippa Oil Intelligence"}
+    if content:
+        payload["content"] = content
+
+    try:
+        resp = requests.post(url, json=payload, timeout=15)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        status = getattr(exc.response, "status_code", "n/a")
+        raise RuntimeError(
+            f"Discord webhook post failed (status: {status})."
+        ) from None  # never propagate the URL-bearing exception
+    return True
+
+
+def send_discord_pnl(content: str | None = None) -> bool:
+    """Post ONLY the track-record embed (no market read). Returns True."""
+    url = os.getenv("DISCORD_WEBHOOK_URL", "").strip()
+    if not url:
+        raise RuntimeError("DISCORD_WEBHOOK_URL not set in .env.")
+    embed = build_pnl_embed()
+    if embed is None:
+        raise RuntimeError("No pnl_summary artifact — run `oil pnl show` first.")
+    payload: dict[str, Any] = {"embeds": [embed],
+                               "username": "Kippa Oil Intelligence"}
+    if content:
+        payload["content"] = content
+    try:
+        resp = requests.post(url, json=payload, timeout=15)
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        status = getattr(exc.response, "status_code", "n/a")
+        raise RuntimeError(
+            f"Discord track-record post failed (status: {status})."
+        ) from None
+    return True
+
+
+def send_discord_report(report_path: str | Path,
+                        content: str | None = None) -> bool:
+    """Upload a report file (markdown) to Discord as an attachment.
+
+    Used to push the daily / weekly / weekend reports in full, since they
+    are far larger than an embed's field limits. Returns True on success.
+    """
+    import json as _json
+
+    url = os.getenv("DISCORD_WEBHOOK_URL", "").strip()
+    if not url:
+        raise RuntimeError("DISCORD_WEBHOOK_URL not set in .env.")
+    path = Path(report_path)
+    if not path.exists():
+        raise FileNotFoundError(f"report not found: {path}")
+
+    payload = {"username": "Kippa Oil Intelligence",
+               "content": content or f"📄 {path.name}"}
+    try:
+        with path.open("rb") as fh:
+            resp = requests.post(
+                url,
+                data={"payload_json": _json.dumps(payload)},
+                files={"files[0]": (path.name, fh, "text/markdown")},
+                timeout=30,
+            )
+        resp.raise_for_status()
+    except requests.RequestException as exc:
+        status = getattr(exc.response, "status_code", "n/a")
+        raise RuntimeError(
+            f"Discord report upload failed (status: {status})."
+        ) from None
+    return True
+
+
+def main() -> None:
+    send_discord_update()
+    print("✓ Posted the current market read to Discord.")
+
+
+if __name__ == "__main__":
+    main()

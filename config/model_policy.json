@@ -1,0 +1,61 @@
+{
+  "_schema": {
+    "description": "Model-selection policy for the platform's AI-driven jobs, per docs/013_Automation.md. Maps each job to a capability tier, and each tier to a concrete Claude model id. This is the single source of truth for 'which model runs which job' — it exists so model choice is explainable and version-controlled, never a hidden default (Project Vision invariant: no black-box decisions).",
+    "important": "The 22 analytical engines use NO model — they are deterministic Python over real data. A model is only ever involved in the Claude turns that operate the platform: writing the morning report, analyzing the weekly EIA release, ad-hoc analysis, code audits, and the keepalive. Tier 'none' marks jobs that must never incur model cost.",
+    "activation": "A scheduled Routine only runs on the tier's model when it fires as its OWN fresh session (create_new_session_on_fire). A Routine bound to an existing session always inherits that session's model, so per-job selection requires the job to run as a fresh-session Routine. See docs/013_Automation.md.",
+    "policy_version": 1,
+    "last_update": "2026-07-17"
+  },
+  "tiers": {
+    "max": {
+      "model": "claude-fable-5",
+      "why": "Top-tier reasoning. Use where analytical quality matters most and cost is secondary."
+    },
+    "analysis": {
+      "model": "claude-fable-5",
+      "why": "News synthesis, cross-day diffing, report writing, judgement calls on invalidation triggers. Best model earns its cost here."
+    },
+    "routine": {
+      "model": "claude-sonnet-5",
+      "why": "Well-scoped multi-step work that is not analytically deep. Balanced capability and cost."
+    },
+    "cheap": {
+      "model": "claude-haiku-4-5-20251001",
+      "why": "Trivial, mechanical checks. Fast and inexpensive; conserves usage quota."
+    },
+    "none": {
+      "model": null,
+      "why": "No LLM involved. Pure Python compute — the deterministic engines and the Discord watch cycle."
+    }
+  },
+  "jobs": {
+    "morning_report": {
+      "tier": "analysis",
+      "why": "Reads overnight news, diffs against yesterday's committed report, writes the daily brief. Quality of judgement is the whole point."
+    },
+    "eia_weekly": {
+      "tier": "analysis",
+      "why": "Interprets the weekly EIA release against the running market narrative and flags what changed."
+    },
+    "interactive_analysis": {
+      "tier": "max",
+      "why": "Live analytical work in a session with a human — full-system scans, strategy questions, deep dives."
+    },
+    "audit": {
+      "tier": "max",
+      "why": "Code and security review. Missed defects are expensive; use the strongest model."
+    },
+    "keepalive": {
+      "tier": "cheap",
+      "why": "Check one file's age and relaunch a background loop if stale. No analysis — the cheapest capable model is correct."
+    },
+    "discord_watch_cycle": {
+      "tier": "none",
+      "why": "The 30-minute watch loop is pure Python: run engines, build the embed, POST to Discord. No model."
+    },
+    "engine_compute": {
+      "tier": "none",
+      "why": "All 22 analytical engines are deterministic Python over real data. No model, by design (explainability invariant)."
+    }
+  }
+}

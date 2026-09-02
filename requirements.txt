@@ -1,0 +1,14 @@
+# Oil Intelligence Platform — Python dependencies
+# Install: pip install -r requirements.txt
+
+pandas>=2.0
+requests>=2.31
+python-dotenv>=1.0
+
+# Development / testing
+pytest>=8.0
+scipy>=1.10
+fastapi>=0.110
+uvicorn>=0.29
+httpx>=0.27
+numpy>=1.26

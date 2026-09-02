@@ -1,0 +1,20 @@
+{
+  "_schema": "Environment configuration (docs/015_Deployment.md). Secrets NEVER live here — they come from .env / the environment. These are operational parameters per environment.",
+  "environments": {
+    "development": {
+      "api_host": "127.0.0.1",
+      "api_port": 8000,
+      "rate_limit_per_min": 60,
+      "data_start": "2010-01-01",
+      "log_level": "debug"
+    },
+    "production": {
+      "api_host": "0.0.0.0",
+      "api_port": 8000,
+      "rate_limit_per_min": 60,
+      "data_start": "2010-01-01",
+      "log_level": "info",
+      "notes": "Run behind TLS termination; rotate PLATFORM_API_KEYS on schedule; deploy gate: oil deploy check must pass."
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "_schema": "Workflow definitions for the automation engine (docs/013_Automation.md). Steps run sequentially; each step is retried up to max_retries on failure; on_failure 'continue' records the failure and proceeds, 'abort' stops the workflow.",
+  "workflows": {
+    "weekly_full_run": {
+      "description": "Full refresh after the Wednesday EIA release: pull data, recompute every signal, revalidate, and re-issue the strategy view.",
+      "max_retries": 2,
+      "on_failure": "continue",
+      "steps": [
+        "data_pull",
+        "data_quality",
+        "inventory_surprise",
+        "composite_signal",
+        "risk_assessment",
+        "signal_confidence",
+        "backtest",
+        "forecast",
+        "simulation",
+        "strategy",
+        "monitoring",
+        "sim_ledger",
+        "gate_sweep"
+      ]
+    },
+    "quick_signal": {
+      "description": "Fast intraday re-read without re-pulling EIA data: composite, risk, confidence, monitoring.",
+      "max_retries": 1,
+      "on_failure": "continue",
+      "steps": [
+        "composite_signal",
+        "risk_assessment",
+        "signal_confidence",
+        "monitoring"
+      ]
+    },
+    "watch_cycle": {
+      "description": "Watch-mode cycle: refresh data + signal stack for the Discord feed. Skips the slow panel engines (backtest/replay/gate_sweep run on the daily and weekly cadences). The trade ledger is NOT a step here - it is re-simulated in watch.py immediately AFTER the signal row is captured, so it always sees the current cycle rather than the previous one.",
+      "max_retries": 1,
+      "on_failure": "continue",
+      "steps": [
+        "data_pull",
+        "data_quality",
+        "inventory_surprise",
+        "composite_signal",
+        "risk_assessment",
+        "signal_confidence",
+        "strategy",
+        "monitoring"
+      ]
+    },
+    "daily_validation": {
+      "description": "Daily research validation, run once per morning report. Rebuilds the DAILY composite trade ledger from the live signal log, sweeps the entry gate across the out-of-sample panel, rebuilds the INTRADAY ledger from 60d of 30m bars, and refreshes the backtest report. The daily and intraday ledgers are separate artifacts on purpose - different horizons, costs and sample sizes; pooling them would hide the differences. Research only (doc 010 invariant 6); never feeds production decisions.",
+      "max_retries": 1,
+      "on_failure": "continue",
+      "steps": [
+        "sim_ledger",
+        "gate_sweep",
+        "intraday_sim",
+        "backtest"
+      ]
+    }
+  }
+}

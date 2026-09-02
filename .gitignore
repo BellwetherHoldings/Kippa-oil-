@@ -1,0 +1,75 @@
+# Environment and secrets
+.env
+.env.*
+*.env
+secrets/
+credentials/
+*.key
+*.pem
+*.secret
+
+# API keys and config with secrets
+config/local/
+config/*.local.*
+
+# Python
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+venv/
+.venv/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Data (large files)
+*.csv
+*.parquet
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+data/raw/
+data/processed/
+
+# Model artifacts
+*.pt
+*.pth
+*.onnx
+*.joblib
+models/
+
+# Engine outputs (regenerated each run)
+data/*.json
+# ...except the trade ledger: source-of-truth P&L data, not regenerable.
+# (Holds no secrets — positions and prices only.)
+!data/trades.json
+
+# The signal log is accumulated observation, not a regenerable artifact:
+# every row is a market state that existed once and cannot be recomputed
+# later. Doc 010 invariant 2 requires historical datasets stay version
+# controlled, and the 2026-08-08 container recycle proved that anything
+# gitignored is one restart from gone. Committed deliberately.
+# (Holds no secrets — signal values and public prices only.)
+!data/signal_log.jsonl

@@ -1,0 +1,92 @@
+{
+  "_source": "Lucid Trading published rules, compiled 2026-08-22. Marketing page supplied by Jakob contained NO numeric rules; every figure below came from secondary rule aggregators plus the Lucid help centre index. See _verification.",
+  "_verification": {
+    "last_verified": "2026-08-22",
+    "verified_against": [
+      "https://damnpropfirms.com/prop-firms/lucid-trading-rules-payouts/",
+      "https://fundedwiki.com/lucid-trading/max-drawdown",
+      "https://tradetanto.com/learn/lucid-trading-rules-explained-every-plan-rule-and-limit",
+      "https://support.lucidtrading.com/en/articles/12890136-lucidpro-drawdown",
+      "https://support.lucidtrading.com/en/articles/12945815-lucidflex-drawdown"
+    ],
+    "confidence": "medium",
+    "caveat": "These are SECONDARY sources. support.lucidtrading.com returned HTTP 403 to automated fetch, so the primary help-centre articles were NOT read directly. Before funding a real account, confirm every number against the Lucid portal. The instrument-freshness discipline added 2026-08-21 applies here: this is a dated external rule set and it must be re-verified, not trusted because it was once written down."
+  },
+  "instrument": {
+    "symbol": "CL",
+    "name": "NYMEX WTI Crude Oil futures",
+    "contract_bbl": 1000,
+    "tick_size": 0.01,
+    "tick_value_usd": 10.0,
+    "micro_symbol": "MCL",
+    "micro_bbl": 100,
+    "micro_tick_value_usd": 1.0,
+    "micros_per_mini": 10
+  },
+  "session": {
+    "flat_by_local": "16:45",
+    "flat_by_tz": "America/New_York",
+    "auto_close": true,
+    "auto_close_fails_account": false,
+    "reopen_local": "18:00",
+    "reopen_days": "Sunday-Thursday"
+  },
+  "universal": {
+    "profit_split": 0.90,
+    "payout_minimum_usd": 500,
+    "max_funded_accounts_per_household": 5,
+    "hedging": "hard_banned_including_across_accounts",
+    "drawdown_type": "end_of_day_trailing",
+    "drawdown_trails": "highest CLOSING balance only - intraday highs and lows never move it and never breach it",
+    "drawdown_locks_at": "initial_balance + 100, once the account CLOSES above the Initial Trail Balance",
+    "news_trading": "allowed on Pro, Flex and Direct"
+  },
+  "plans": {
+    "LucidPro": {
+      "consistency_eval": null,
+      "consistency_funded": 0.40,
+      "payout_buffer": "max_loss_limit + 100",
+      "dll_type": "soft - locks the session, does not fail the account",
+      "scaling": "once funded, DLL graduates to LucidScale = 60% of highest end-of-day profit; ratchets up only",
+      "sizes": {
+        "25000":  {"profit_target": 1250, "max_loss": 1000, "daily_loss": null, "max_minis": 2,  "min_days": 0},
+        "50000":  {"profit_target": 3000, "max_loss": 2000, "daily_loss": 1200, "max_minis": 4,  "min_days": 0},
+        "100000": {"profit_target": 6000, "max_loss": 3000, "daily_loss": 1800, "max_minis": 6,  "min_days": 0},
+        "150000": {"profit_target": 9000, "max_loss": 4500, "daily_loss": 2700, "max_minis": 10, "min_days": 0}
+      }
+    },
+    "LucidFlex": {
+      "consistency_eval": 0.50,
+      "consistency_funded": null,
+      "payout_buffer": null,
+      "dll_type": "none",
+      "scaling": "contract size scales up AND down with account profit once funded",
+      "payout_gate": "five separate trading days each clearing the minimum daily profit for the size",
+      "min_profit_days": 5,
+      "sizes": {
+        "25000":  {"profit_target": 1250, "max_loss": 1000, "daily_loss": null, "max_minis": 2,  "min_days": 0, "min_daily_profit": 100},
+        "50000":  {"profit_target": 3000, "max_loss": 2000, "daily_loss": null, "max_minis": 4,  "min_days": 0, "min_daily_profit": 150},
+        "100000": {"profit_target": 6000, "max_loss": 3000, "daily_loss": null, "max_minis": 6,  "min_days": 0, "min_daily_profit": 200},
+        "150000": {"profit_target": 9000, "max_loss": 4500, "daily_loss": null, "max_minis": 10, "min_days": 0, "min_daily_profit": 250}
+      }
+    },
+    "LucidDirect": {
+      "consistency_eval": null,
+      "consistency_funded": 0.20,
+      "payout_buffer": "varies",
+      "dll_type": "soft, graduates to LucidScale = 60% of highest end-of-day profit once above Initial Trail Balance",
+      "no_eval": true,
+      "sizes": {
+        "25000":  {"profit_target_first": 1500, "profit_target_later": 1250, "max_loss": 1000, "daily_loss": null, "max_minis": 2,  "min_days": 0},
+        "50000":  {"profit_target_first": 3000, "profit_target_later": 2000, "max_loss": 2000, "daily_loss": 1200, "max_minis": 4,  "min_days": 0},
+        "100000": {"profit_target_first": 6000, "profit_target_later": 3000, "max_loss": 3500, "daily_loss": 2100, "max_minis": 6,  "min_days": 0},
+        "150000": {"profit_target_first": 9000, "profit_target_later": 4500, "max_loss": 5000, "daily_loss": 3000, "max_minis": 10, "min_days": 0}
+      }
+    }
+  },
+  "_conflicts_not_resolved": [
+    "LucidDirect 100k/150k max_loss: one source says 3000/4500 (same as Pro), another says 3500/5000. The LARGER figure is used above only where a source stated it explicitly for Direct; treat Direct sizing as the least certain in this file.",
+    "LucidPro eval consistency: one source says 40% applies to the evaluation, another says the eval has none and 40% is funded-only. This file assumes funded-only, which is the LESS permissive reading for eval sizing and the MORE dangerous one if wrong - so eval trades are sized as if 40% applies anyway.",
+    "LucidBlack appears discontinued for new traders and is not modelled."
+  ]
+}
